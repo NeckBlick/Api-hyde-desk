@@ -3,6 +3,26 @@ const db = require('../../conexao')
 
 const routes = express.Router()
 
+routes.get('/', (req, res, next) =>{
+    db.getConnection((error, conn) => {
+        conn.query(
+            'SELECT * FROM empresa',
+
+            (error, result, field) => {
+                conn.resume()
+
+                if(error){
+                    res.status(500).send({
+                        error: error,
+                        response: null
+                    })
+                }
+                res.status(200).send(result)
+            }
+        )
+    })
+})
+
 routes.post('/', (req, res, next) => {
 
     //aqui faremos o a query com o banco de dados
@@ -13,6 +33,7 @@ routes.post('/', (req, res, next) => {
                 message: error
             })
         }
+        
 
         //após escrevermos a query normalmente, criamos um array para iresirmos os valores req.bodu.{alguma coisa}
         conn.query(
