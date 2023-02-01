@@ -1,10 +1,10 @@
-const mysql =  require("mysql")
+const mysql = require("mysql");
 
 const db = mysql.createPool({
-    host:"localhost",
-    user: "root",
-    password:"",
-    database: "hyde_desk"
-})
+  host: "localhost",
+  user: "root",
+  password: "42035843",
+  database: "hyde_desk",
+});
 
-module.exports = db
+module.exports = db;
