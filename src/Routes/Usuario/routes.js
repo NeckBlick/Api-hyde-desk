@@ -1,21 +1,21 @@
 const express = require("express")
+
 const routes = express.Router()
+const db = require("../../conexao")
 
 
-routes.get("/",(req, res, next) => {
+routes.get("/",  (req, res) => {
     // Pegar dados do formulario
-    const { nome, email } =  req.body
+    let query = "SELECT * FROM tecnico"
+    db.query(query, (rows, err) => {
+        if(err){
+            console.log(err)
+        }
+        return res.send("Foi")
+        
+    })
 
 
-    // Validação dos dados
-    if(!nome){
-        return res.status(422).json({data:"Nome invalido!"})
-    }
-
-    const dados = {}
-
-    // Resposta da API
-    return res.status(200).send(dados)
 })
 
 module.exports = routes

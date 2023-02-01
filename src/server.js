@@ -1,8 +1,7 @@
 const express = require("express")
-const app = express()
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
-const mysql =  require("mysql")
+const cors = require("cors")
 
 // Rotas
 const userRoutes = require("./Routes/Usuario/routes")
@@ -10,6 +9,8 @@ const tecnicoRoutes = require("./Routes/Tecnico/routes")
 const chamadoRoutes = require("./Routes/Chamados/routes")
 const empresaRoutes = require("./Routes/Empresa/routes")
 
+const app = express()
+app.use(cors())
 app.use(express.json())
 
 // Definição das rotas
