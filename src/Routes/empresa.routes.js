@@ -25,7 +25,7 @@ routes.get("/", (req, res, next) => {
 
 routes.post("/", (req, res, next) => {
   //aqui faremos o a query com o banco de dados
-  const { nome, cnpj, cep, numero_endereco, telefone, email, senha} = req;body
+  const { nome, cnpj, cep, numero_endereco, telefone, email, senha} = req.body
   let query = "INSERT INTO empresa (nome, cnpj, cep, numero_endereco, telefone, email, senha) VALUES (?, ?, ?, ?, ?,?, ?)"
   db.getConnection((error, conn) => {
     if (error) {
@@ -34,7 +34,7 @@ routes.post("/", (req, res, next) => {
       });
     }
 
-    //após escrevermos a query normalmente, criamos um array para iresirmos os valores req.bodu.{alguma coisa}
+    //após escrevermos a query normalmente, criamos um array para iresirmos os valores
     conn.query(
       query,
       [
