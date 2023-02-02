@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
+app.use("/uploads", express.static("uploads"))
 app.use(cors());
 app.use(express.json());
 
@@ -28,10 +29,9 @@ const empresaRoutes = require("./src/Routes/empresa.routes");
 const funcionarioRoutes = require("./src/Routes/funcionario.routes");
 
 // Definição das rotas
-app.use("/uploads", express.static("uploads"))
 app.use("/tecnicos", tecnicoRoutes);
 app.use("/chamados", chamadoRoutes);
 app.use("/empresas", empresaRoutes);
-app.use("/funcionario", funcionarioRoutes);
+app.use("/funcionarios", funcionarioRoutes);
 
 module.exports = app;
