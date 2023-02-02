@@ -22,16 +22,16 @@ app.use((req, res, next) => {
 });
 
 // Rotas
-const userRoutes = require("./Routes/user.routes");
-const tecnicoRoutes = require("./Routes/Tecnico/routes");
-const chamadoRoutes = require("./Routes/Chamados/routes");
-const empresaRoutes = require("./Routes/Empresa/routes");
+const tecnicoRoutes = require("./Routes/tecnico.routes");
+const chamadoRoutes = require("./Routes/chamado.routes");
+const empresaRoutes = require("./Routes/empresa.routes");
+const funcionarioRoutes = require("./Routes/funcionario.routes");
 
 // Definição das rotas
 app.use("/uploads", express.static("uploads"))
-app.use("/usuarios", userRoutes);
 app.use("/tecnicos", tecnicoRoutes);
 app.use("/chamados", chamadoRoutes);
 app.use("/empresas", empresaRoutes);
+app.use("/funcionario", funcionarioRoutes);
 
 module.exports = app;
