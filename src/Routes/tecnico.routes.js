@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const routes = express.Router();
-const db = require("../conexao");
+const db = require("../../conexao");
 const multer = require("multer");
 
 // Configurações para imagem
