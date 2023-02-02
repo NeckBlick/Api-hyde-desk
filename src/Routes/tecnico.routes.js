@@ -115,4 +115,10 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
   });
 });
 
+
+// Login
+routes.post("/login", (req, res) => {
+  
+})
+
 module.exports = routes;
