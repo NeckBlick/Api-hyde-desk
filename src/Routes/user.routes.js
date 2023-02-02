@@ -21,7 +21,7 @@ const upload = multer({storage: storage})
 // Cadastro do técnico
 routes.post("/tecnico", upload.single("anexo"), async (req, res) => {
   console.log(req.file)
-  const foto = req.file
+  const foto = req.file.path
   const { nome, cpf_cnpj, email, especialidade, telefone, matricula, senha, confirmsenha } = req.body
 
   // Validação 
