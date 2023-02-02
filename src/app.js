@@ -1,6 +1,4 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const cors = require("cors");
 
 const app = express();
@@ -24,12 +22,13 @@ app.use((req, res, next) => {
 });
 
 // Rotas
-const userRoutes = require("./Routes/Usuario/routes");
+const userRoutes = require("./Routes/user.routes");
 const tecnicoRoutes = require("./Routes/Tecnico/routes");
 const chamadoRoutes = require("./Routes/Chamados/routes");
 const empresaRoutes = require("./Routes/Empresa/routes");
 
 // Definição das rotas
+app.use("/uploads", express.static("uploads"))
 app.use("/usuarios", userRoutes);
 app.use("/tecnicos", tecnicoRoutes);
 app.use("/chamados", chamadoRoutes);
