@@ -9,7 +9,7 @@ const multer = require("multer");
 // Configurações para imagem
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.resolve("./uploads/"));
+    cb(null, './uploads/');
   },
   filename: (req, file, cb) => {
     let date = new Date().toISOString();
@@ -20,18 +20,17 @@ const upload = multer({ storage: storage });
 
 // Cadastro
 routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
-  const foto = req.file.path;
+  const foto = req.file.path
   const {
     nome,
     cpf_cnpj,
     email,
     especialidade,
     telefone,
-    matricula,
     senha,
     confirmsenha,
   } = req.body;
-
+  
   // Validação
   if (!nome) {
     return res.status(422).send({ message: "O nome e obrigatorio!" });
@@ -48,9 +47,6 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
   if (!telefone) {
     return res.status(422).send({ message: "O telefone e obrigatorio!" });
   }
-  if (!matricula) {
-    return res.status(422).send({ message: "A matricula e obrigatorio!" });
-  }
   if (!senha) {
     return res.status(422).send({ message: "A senha e obrigatorio!" });
   }
@@ -61,6 +57,13 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
     return res.status(422).send({ message: "A foto e obrigatorio!" });
   }
 
+  // Matricula
+  var randomized = Math.ceil(Math.random() * Math.pow(10,6));//Cria um n�mero aleat�rio do tamanho definido em size.
+	var digito = Math.ceil(Math.log(randomized));//Cria o d�gito verificador inicial
+	while(digito > 10){   //Pega o digito inicial e vai refinando at� ele ficar menor que dez
+			digito = Math.ceil(Math.log(digito));
+		}
+	var matricula = randomized + '-' + digito;
   // Criptografia de senha
   const salt = await bcrypt.genSalt(12);
   const hashSenha = await bcrypt.hash(senha, salt);
