@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const db = require("../../conexao");
 const routes = express.Router();
 
+
+// Cadastro 
 routes.post("/cadastro", async (req, res) => {
   const { nome, nome_empresa, matricula, usuario, senha, confirmsenha } =
     req.body;
@@ -43,7 +45,7 @@ routes.post("/cadastro", async (req, res) => {
       let query = `INSERT INTO funcionarios (nome, usuario, matricula, senha, empresa_id) SELECT '${nome}','${usuario}','${matricula}','${hashSenha}', id_empresa FROM empresa WHERE nome LIKE '${nome_empresa}'`;
 
       conn.query(query, (error, result, fields) => {
-        conn.resume();
+        conn.release();
         if (error) {
           console.log(error);
           return res.status(500).send({
