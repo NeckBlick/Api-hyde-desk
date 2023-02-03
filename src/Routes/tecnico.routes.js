@@ -1,21 +1,11 @@
+require('dotenv').config()
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const routes = express.Router();
 const db = require("../../conexao");
 const multer = require("multer");
-
-// Configurações para imagem
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "./uploads/");
-  },
-  filename: (req, file, cb) => {
-    let date = new Date().toISOString();
-    cb(null, date + file.originalname);
-  },
-});
-const upload = multer({ storage: storage });
+const upload = require("../../middlewares/uploadImagens")
 
 // Cadastro
 routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
@@ -97,7 +87,7 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
           foto,
         ],
         (error, result, fields) => {
-          conn.resume();
+          conn.release();
           if (error) {
             console.log(error);
             return res.status(500).send({
@@ -114,11 +104,5 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
     });
   });
 });
-
-
-// Login
-routes.post("/login", (req, res) => {
-  
-})
 
 module.exports = routes;
