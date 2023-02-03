@@ -1,21 +1,12 @@
+require('dotenv').config()
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const routes = express.Router();
 const db = require("../../conexao");
 const multer = require("multer");
-
-// Configurações para imagem
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "./uploads/");
-  },
-  filename: (req, file, cb) => {
-    let date = new Date().toISOString();
-    cb(null, date + file.originalname);
-  },
-});
-const upload = multer({ storage: storage });
+const login = require("../../middlewares/login");
+const upload = require("../../middlewares/uploadImagens")
 
 // Cadastro
 routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
@@ -97,7 +88,7 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
           foto,
         ],
         (error, result, fields) => {
-          conn.resume();
+          conn.release();
           if (error) {
             console.log(error);
             return res.status(500).send({
@@ -117,8 +108,49 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
 
 
 // Login
-routes.post("/login", (req, res) => {
-  
+routes.post("/login", login, (req, res) => {
+  const { cnpf_cnpj, senha } =  req.body
+
+  if(!cnpf_cnpj){
+    return  res.status(422).send({message: "Usuario ou senha invalido!"})
+  }
+  if(!senha){
+    return  res.status(422).send({message: "Usuario ou senha invalido!"})
+  }
+
+
+  db.getConnection((erro, conn) => {
+    if(erro){
+      return console.log(erro)
+    }
+    let query = `SELECT * FROM tecnico WHERE cpf_cnpj = ?`
+    conn.query(query,[user,user],(error, result, fields) => {
+      conn.release()
+      if(error){
+        return res.status(500).send({ erro: true, error })
+      }
+      if(result.length > 0){
+        const senhaBanco = result[0].senha
+        bcrypt.compare(senha, senhaBanco, (err, data) => {
+          if(err){
+            return  res.status(422).send({message: "Usuario ou senha invalido!"})
+          }
+
+          if(data){
+            let token = jwt.sign({
+              id_tecnico: result[0].id_tecnico,
+              email: result[0].senha
+            }, process.env.JWT_KEY,
+            {
+              expiresIn: "1d"
+            })
+            return res.status(200).send({message: "Logado com sucesso", token: token})
+            
+          }
+        })
+      }
+    })
+  })
 })
 
 module.exports = routes;
