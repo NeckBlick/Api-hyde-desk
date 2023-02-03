@@ -6,6 +6,7 @@ const routes = express.Router()
 routes.get("/", (req, res, next) => {
     db.getConnection((error, conn) => {
 
+        
       conn.query(
         "SELECT * FROM chamados",
   
@@ -23,6 +24,26 @@ routes.get("/", (req, res, next) => {
       );
     });
   });
+// chamando um chamado unico 
+  routes.get("/:id", (req, res, next) =>{
+    const id_chamado = req.params.id
+
+    const query = `SELECT * FROM chamados WHERE id_chamados = ${id_chamado}`
+
+    db.getConnection((error, conn) =>{
+        conn.query(query, (error, result) =>{
+            if(error){
+                return res.status(500).send({
+                    error: error
+                })
+            }
+
+            return res.status(200).send({
+                result: result
+            })
+        })
+    })
+  })
 
 
 module.exports = routes
