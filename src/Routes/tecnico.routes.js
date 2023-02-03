@@ -5,7 +5,6 @@ const jwt = require("jsonwebtoken");
 const routes = express.Router();
 const db = require("../../conexao");
 const multer = require("multer");
-const login = require("../../middlewares/login");
 const upload = require("../../middlewares/uploadImagens")
 
 // Cadastro
@@ -105,52 +104,5 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
     });
   });
 });
-
-
-// Login
-routes.post("/login", login, (req, res) => {
-  const { cnpf_cnpj, senha } =  req.body
-
-  if(!cnpf_cnpj){
-    return  res.status(422).send({message: "Usuario ou senha invalido!"})
-  }
-  if(!senha){
-    return  res.status(422).send({message: "Usuario ou senha invalido!"})
-  }
-
-
-  db.getConnection((erro, conn) => {
-    if(erro){
-      return console.log(erro)
-    }
-    let query = `SELECT * FROM tecnico WHERE cpf_cnpj = ?`
-    conn.query(query,[user,user],(error, result, fields) => {
-      conn.release()
-      if(error){
-        return res.status(500).send({ erro: true, error })
-      }
-      if(result.length > 0){
-        const senhaBanco = result[0].senha
-        bcrypt.compare(senha, senhaBanco, (err, data) => {
-          if(err){
-            return  res.status(422).send({message: "Usuario ou senha invalido!"})
-          }
-
-          if(data){
-            let token = jwt.sign({
-              id_tecnico: result[0].id_tecnico,
-              email: result[0].senha
-            }, process.env.JWT_KEY,
-            {
-              expiresIn: "1d"
-            })
-            return res.status(200).send({message: "Logado com sucesso", token: token})
-            
-          }
-        })
-      }
-    })
-  })
-})
 
 module.exports = routes;

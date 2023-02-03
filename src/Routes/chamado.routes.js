@@ -1,12 +1,11 @@
 const express = require("express");
-const bcrypt = require("bcryptjs");
 const db = require("../../conexao");
-const multer = require("multer");
+const upload = require("../../middlewares/uploadImagens");
 
 const routes = express.Router();
 
-routes.post("/criar", (req, res, next) => {
-  const anexo = null;
+routes.post("/criar", upload.single("anexo"), (req, res, next) => {
+  const anexo = req.file.path;
   const { prioridade, patrimonio, problema, descricao, setor, funcionario_id } =
     req.body;
 
