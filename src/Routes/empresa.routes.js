@@ -5,6 +5,9 @@ const routes = express.Router();
 
 routes.get("/", (req, res, next) => {
   db.getConnection((error, conn) => {
+    if(error){
+      return (console.log(error))
+    }
     conn.query(
       "SELECT * FROM empresa",
 
@@ -23,6 +26,33 @@ routes.get("/", (req, res, next) => {
   });
 });
 
+routes.get("/:id", (req, res, next) =>{
+  const empresa = req.params.id
+
+  let query = `SELECT * FROM empresa WHERE id_empresa='${empresa}'`
+
+  db.getConnection((error, conn) =>{
+    if(error){
+      return res.status(500).send({
+        message: error
+      })
+      
+    }
+    conn.query(query, 
+      (error, result, field) =>{
+        conn.resume()
+  
+        if(error){
+        res.status(500).send({
+          error: error,
+          response: null
+        })
+      }
+      res.status(200).send(result)
+      }
+      )
+  })
+})
 routes.post("/cadastro", (req, res, next) => {
   //aqui faremos o a query com o banco de dados
   const { nome, cnpj, cep, numero_endereco, telefone, email, senha, confirmarSenha} = req.body
