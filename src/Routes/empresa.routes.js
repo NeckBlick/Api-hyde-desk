@@ -17,7 +17,7 @@ routes.get("/", (req, res, next) => {
             response: null,
           });
         }
-        res.status(200).send(result);
+        res.status(200).send({acesso: 2, data: result});
       }
     );
   });
