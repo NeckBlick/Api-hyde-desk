@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Cadastro
+// Cadastrar tecnico
 routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
   const foto = req.file.path;
   const {
@@ -116,9 +116,59 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
 });
 
 
-// Login
+// chamar tecnico em especifico
+routes.get("/:id", (req, res, next) => {
+	const id_tecnico = req.params.id;
+	const query = `SELECT * FROM tecnico WHERE id_tecnico = ${id_tecnico}`;
+
+	db.getConnection((error, conn) => {
+		conn.query(query, (error, result) => {
+			if (error) {
+				return res.status(500).send({
+					error: error,
+				});
+			}
+			return res.status(200).send({
+				result: result,
+			});
+		});
+	});
+});
+
 routes.post("/login", (req, res) => {
   
+})
+
+//deletar tecnico
+routes.delete("/deletar/:id",(req,res) =>{
+  const {id} = req.params;
+  db.getConnection((error, conn)=>{
+    if (error){
+      return res.status(500).send({error:error})
+    }
+    const query = "SELECT * FROM tecnico WHERE id_tecnico = ?";
+    conn.query(query, [id], (error, result, field)=>{
+      if (error){
+        return res.status(500).send({error:error})
+      }
+      if(result.length != 0){
+        const query = "DELETE FROM tecnico WHERE id_tecnico = ? ";
+        conn.query(query, [id], (error,result,field)=>{
+          conn.release();
+          if(error){
+            return res.status(400).send({message:"não foi possivel deletar o tecnico"})
+          }
+          return res.status(200).send({message: "o usuario foi deletado"})
+        })
+
+      }
+      else{
+        conn.release()
+        return res.status(400).send({message: "O usuario não existe"})
+      }
+    })
+  })
+
 })
 
 module.exports = routes;
