@@ -1,24 +1,16 @@
+require("dotenv").config();
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const routes = express.Router();
 const db = require("../../conexao");
 const multer = require("multer");
+const upload = require("../../middlewares/uploadImagens");
+const login = require("../../middlewares/login")
 
-// Configurações para imagem
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "./uploads/");
-  },
-  filename: (req, file, cb) => {
-    let date = new Date().toISOString();
-    cb(null, date + file.originalname);
-  },
-});
-const upload = multer({ storage: storage });
-
-// Cadastro
+// Cadastrar tecnico
 routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
+
   const foto = req.file.path;
   const {
     nome,
@@ -74,51 +66,167 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
         erro: erro,
       });
     }
-
-    // Criptografia de senha
-    bcrypt.hash(senha, 10, (errorCrypt, hashSenha) => {
-      if (errorCrypt) {
-        return console.log(errorCrypt);
+    let query = "SELECT * FROM tecnicos WHERE cpf_cnpj = ?";
+    conn.query(query, [cpf_cnpj], (erro, result) => {
+      if (erro) {
+        return res.status(500).send({ erro: erro });
       }
-
-      let query =
-        "INSERT INTO tecnico (nome, cpf_cnpj, email, telefone, especialidade, matricula, senha, foto) VALUES (?,?,?,?,?,?,?,?)";
-
-      conn.query(
-        query,
-        [
-          nome,
-          cpf_cnpj,
-          email,
-          telefone,
-          especialidade,
-          matricula,
-          hashSenha,
-          foto,
-        ],
-        (error, result, fields) => {
-          conn.resume();
-          if (error) {
-            console.log(error);
-            return res.status(500).send({
-              message: "Houve um erro, tente novamente mais tarde...",
-              erro: error,
-            });
+      if (result.length > 0) {
+        return res.status(409).send({ message: "Usuario ja cadastado" });
+      } else {
+        // Criptografia de senha
+        bcrypt.genSalt(10, (err, salt) => {
+          if(err){
+            return next(err)
           }
+          bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
+            if (errorCrypt) {
+              return console.log(errorCrypt);
+            }
+  
+            let query =
+              "INSERT INTO tecnicos (nome, cpf_cnpj, email, telefone, especialidade, matricula, senha, foto, status_tecnico) VALUES (?,?,?,?,?,?,?,?, 'Ativo')";
+  
+            conn.query(
+              query,
+              [
+                nome,
+                cpf_cnpj,
+                email,
+                telefone,
+                especialidade,
+                matricula,
+                hashSenha,
+                foto,
+              ],
+              (error, result, fields) => {
+                conn.release();
+                if (error) {
+                  console.log(error);
+                  return res.status(500).send({
+                    message: "Houve um erro, tente novamente mais tarde...",
+                    erro: error,
+                  });
+                }
+  
+                return res
+                  .send(201)
+                  .send({ message: "Usuario cadastrado com sucesso", result });
+              }
+            );
+          });
+        })
+        
+      }
+    });
+  });
+});
 
-          return res
-            .send(201)
-            .send({ message: "Usuario cadastrado com sucesso", result });
+// Login
+routes.post("/login", login,(req, res) => {
+  const { cpf_cnpj, senha } = req.body;
+
+  if (!cpf_cnpj) {
+    return res.status(422).send({ message: "O cpf e obrigatório!" });
+  }
+  if (!senha) {
+    return res.status(422).send({ message: "A senha e obrigatoria!" });
+  }
+
+  db.getConnection((err, conn) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send({ erro: err });
+    }
+    const query = "SELECT * FROM tecnicos WHERE cpf_cnpj = ?";
+    conn.query(query, [cpf_cnpj], (erro, result, fields) => {
+      conn.resume();
+      if (erro) {
+        console.log(erro);
+        return res.status(500).send({ erro: erro });
+      }
+      let results = JSON.parse(JSON.stringify(result));
+      console.log(results);
+      if (results.length < 1) {
+        return res.status(401).send({ message: "Falha na autenticacao" });
+      }
+      console.log(senha);
+      console.log(results[0].senha);
+      bcrypt.compare(senha, results[0].senha, (erro, result) => {
+        if (erro) {
+          return res.status(401).send({ message: "Falha na autenticacao" });
         }
-      );
+        console.log(result);
+        if (result) {
+          let token = jwt.sign({
+            id_tecnico: results[0].id_tecnico,
+            cpf: results[0].cpf_cnpj
+          }, process.env.JWT_KEY,
+          {
+            expiresIn: "1d"
+          })
+          return res.status(200).send({ message: "Autenticado com sucesso", token: token });
+        }
+        return res.status(401).send({ message: "Usuario ou senha invalida!" });
+      });
     });
   });
 });
 
 
-// Login
+// chamar tecnico em especifico
+routes.get("/:id", (req, res, next) => {
+	const id_tecnico = req.params.id;
+	const query = `SELECT * FROM tecnico WHERE id_tecnico = ${id_tecnico}`;
+
+	db.getConnection((error, conn) => {
+		conn.query(query, (error, result) => {
+			if (error) {
+				return res.status(500).send({
+					error: error,
+				});
+			}
+			return res.status(200).send({
+				result: result,
+			});
+		});
+	});
+});
+
 routes.post("/login", (req, res) => {
   
+})
+
+//deletar tecnico
+routes.delete("/deletar/:id",(req,res) =>{
+  const {id} = req.params;
+  db.getConnection((error, conn)=>{
+    if (error){
+      return res.status(500).send({error:error})
+    }
+    const query = "SELECT * FROM tecnico WHERE id_tecnico = ?";
+    conn.query(query, [id], (error, result, field)=>{
+      if (error){
+        return res.status(500).send({error:error})
+      }
+      if(result.length != 0){
+        const query = "DELETE FROM tecnico WHERE id_tecnico = ? ";
+        conn.query(query, [id], (error,result,field)=>{
+          conn.release();
+          if(error){
+            return res.status(400).send({message:"não foi possivel deletar o tecnico"})
+          }
+          return res.status(200).send({message: "o usuario foi deletado"})
+        })
+
+      }
+      else{
+        conn.release()
+        return res.status(400).send({message: "O usuario não existe"})
+      }
+    })
+  })
+
 })
 
 module.exports = routes;
