@@ -1,15 +1,60 @@
+
 const express = require("express");
 const db = require("../../conexao");
 const upload = require("../../middlewares/uploadImagens");
 
 const routes = express.Router();
 
+//Buscar todos os chamados
+routes.get("/", (req, res, next) => {
+    db.getConnection((error, conn) => {
+
+        
+      conn.query(
+        "SELECT * FROM chamados",
+  
+        (error, result, field) => {
+          conn.resume();
+  
+          if (error) {
+            res.status(500).send({
+              error: error,
+              response: null,
+            });
+          }
+          res.status(200).send(result);
+        }
+      );
+    });
+  });
+  
+// Buscar um tecnico
+  routes.get("/:id", (req, res, next) =>{
+    const id_chamado = req.params.id
+
+    const query = `SELECT * FROM chamados WHERE id_chamados = ${id_chamado}`
+
+    db.getConnection((error, conn) =>{
+        conn.query(query, (error, result) =>{
+            if(error){
+                return res.status(500).send({
+                    error: error
+                })
+            }
+
+            return res.status(200).send({
+                result: result
+            })
+        })
+    })
+  })
+
+
 // Criação dos chamados
 routes.post("/criar", upload.single("anexo"), (req, res, next) => {
   const anexo = req.file.path;
   const { prioridade, patrimonio, problema, descricao, setor, funcionario_id } =
     req.body;
-
   if (!prioridade) {
     return res.status(422).send({ message: "A prioridade é obrigatório." });
   }
