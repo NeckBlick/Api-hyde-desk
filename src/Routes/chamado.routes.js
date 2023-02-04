@@ -4,56 +4,74 @@ const upload = require("../../middlewares/uploadImagens");
 
 const routes = express.Router();
 
-//Buscar todos os chamados
+// Buscar todos os chamados
 routes.get("/", (req, res, next) => {
-    db.getConnection((error, conn) => {
+  const { status } = req.query;
 
-        
-      conn.query(
-        "SELECT * FROM chamados",
-  
-        (error, result, field) => {
-          conn.resume();
-  
-          if (error) {
-            res.status(500).send({
-              error: error,
-              response: null,
-            });
-          }
-          res.status(200).send(result);
-        }
-      );
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Houve um erro, tente novamente mais tarde...",
+        erro: error,
+      });
+    }
+
+    let query = "";
+
+    if (status) {
+      query = `SELECT * FROM chamados WHERE status = '${status}'`;
+    } else {
+      query = "SELECT * FROM chamados";
+    }
+
+    conn.query(query, (error, result, field) => {
+      conn.release();
+
+      if (error) {
+        res.status(500).send({
+          error: error,
+          response: null,
+        });
+      }
+      res.status(200).send(result);
     });
   });
-  
-// Buscar um tecnico
-  routes.get("/:id", (req, res, next) =>{
-    const id_chamado = req.params.id
+});
 
-    const query = `SELECT * FROM chamados WHERE id_chamados = ${id_chamado}`
+// Buscar um único chamado
+routes.get("/:id", (req, res, next) => {
+  const id_chamado = req.params.id;
 
-    db.getConnection((error, conn) =>{
-        conn.query(query, (error, result) =>{
-            if(error){
-                return res.status(500).send({
-                    error: error
-                })
-            }
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Houve um erro, tente novamente mais tarde...",
+        erro: error,
+      });
+    }
 
-            return res.status(200).send({
-                result: result
-            })
-        })
-    })
-  })
+    const query = `SELECT * FROM chamados WHERE id_chamado = ${id_chamado}`;
 
+    conn.query(query, (error, result) => {
+      conn.release();
+
+      if (error) {
+        return res.status(500).send({
+          error: error,
+        });
+      }
+
+      return res.status(200).send(result);
+    });
+  });
+});
 
 // Criação dos chamados
 routes.post("/criar", upload.single("anexo"), (req, res, next) => {
   const anexo = req.file.path;
   const { prioridade, patrimonio, problema, descricao, setor, funcionario_id } =
     req.body;
+
   if (!prioridade) {
     return res.status(422).send({ message: "A prioridade é obrigatório." });
   }
@@ -82,7 +100,6 @@ routes.post("/criar", upload.single("anexo"), (req, res, next) => {
 
   db.getConnection((error, conn) => {
     if (error) {
-      console.log(error);
       return res.status(500).send({
         message: "Houve um erro, tente novamente mais tarde...",
         erro: error,
@@ -117,6 +134,48 @@ routes.post("/criar", upload.single("anexo"), (req, res, next) => {
         return res.status(200).send({ message: "Chamado aberto com sucesso." });
       }
     );
+  });
+});
+
+// Atualizar status chamado
+routes.put("/atualizar/:id", (req, res, next) => {
+  const { id } = req.params;
+  const { status, tecnico_id } = req.body;
+
+  if (!status) {
+    return res
+      .status(422)
+      .send({ message: "O campo status deve ser especifícado." });
+  }
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Não foi possível atualizar o status do chamado.",
+        error: error,
+      });
+    }
+
+    let query = "";
+    if (tecnico_id) {
+      query = `UPDATE chamados SET status = '${status}', tecnico_id = ${tecnico_id} WHERE id_chamado = ${id}`;
+    } else {
+      query = `UPDATE chamados SET status = '${status}' WHERE id_chamado = ${id}`;
+    }
+
+    conn.query(query, (error, result, fields) => {
+      conn.release();
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível atualizar o status do chamado.",
+          error: error,
+        });
+      }
+
+      return res
+        .status(200)
+        .send({ message: "Status do chamado atualizado com sucesso." });
+    });
   });
 });
 
