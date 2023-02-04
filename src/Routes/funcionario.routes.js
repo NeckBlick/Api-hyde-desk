@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const db = require("../../conexao");
 const routes = express.Router();
 
-
+// Buscar todos os funcionarios
 routes.get("/", (req, res, next) => {
   db.getConnection((erro, conn) =>{
 
@@ -32,6 +32,7 @@ routes.get("/", (req, res, next) => {
   )
 })
 
+// Buscar um funcionario
 routes.get("/:id", (req, res, next) =>{
   const id_funcionario = req.params.id;
   const query = `SELECT * FROM funcionarios WHERE id_funcionario = ${id_funcionario}`
@@ -53,6 +54,7 @@ routes.get("/:id", (req, res, next) =>{
   })
 })
 
+// Editar um funcionario
 routes.put("/editar/:id", (req, res, next) => {
   const {nome_usuario, senha} = req.body 
   const id_funcionario = req.params.id
@@ -86,7 +88,9 @@ routes.put("/editar/:id", (req, res, next) => {
     })
   })
 })
-routes.post("/cadastro", async (req, res) => {
+
+// Cadastro
+routes.post("/cadastro", async (req, res, next) => {
   const { nome, nome_empresa, matricula, usuario, senha, confirmsenha } =
     req.body;
 
@@ -116,29 +120,43 @@ routes.post("/cadastro", async (req, res) => {
         erro: erro,
       });
     }
-
-    // Criptografia de senha
-    bcrypt.hash(senha, 10, (errorCrypt, hashSenha) => {
-      if (errorCrypt) {
-        return console.log(errorCrypt);
+    let query = "SELECT * FROM funcionarios WHERE matricula = ?";
+    conn.query(query, [matricula], (erro, result) => {
+      if (erro) {
+        return res.status(500).send({ erro: erro });
       }
+      if (result.length > 0) {
+        return res.status(409).send({ message: "Funcionario ja cadastado" });
+      } else {
+        bcrypt.genSalt(10, (err, salt) => {
+          if (err) {
+            return next(err);
+          }
+          // Criptografia de senha
+          bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
+            if (errorCrypt) {
+              return console.log(errorCrypt);
+            }
 
-      let query = `INSERT INTO funcionarios (nome, usuario, matricula, senha, empresa_id) SELECT '${nome}','${usuario}','${matricula}','${hashSenha}', id_empresa FROM empresa WHERE nome LIKE '${nome_empresa}'`;
+            let query = `INSERT INTO funcionarios (nome, usuario, matricula, senha, empresa_id) SELECT '${nome}','${usuario}','${matricula}','${hashSenha}', id_empresa FROM empresa WHERE nome LIKE '${nome_empresa}'`;
 
-      conn.query(query, (error, result, fields) => {
-        conn.resume();
-        if (error) {
-          console.log(error);
-          return res.status(500).send({
-            message: "Houve um erro, tente novamente mais tarde...",
-            erro: error,
+            conn.query(query, (error, result, fields) => {
+              conn.release();
+              if (error) {
+                console.log(error);
+                return res.status(500).send({
+                  message: "Houve um erro, tente novamente mais tarde...",
+                  erro: error,
+                });
+              }
+
+              return res
+                .send(201)
+                .send({ message: "Usuario cadastrado com sucesso" });
+            });
           });
-        }
-
-        return res
-          .send(201)
-          .send({ message: "Usuario cadastrado com sucesso", result });
-      });
+        });
+      }
     });
   });
 });
