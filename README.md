@@ -7,11 +7,11 @@ Decidimos criar um sistema para colocar em pratica a nossa ideia descrita acima,
 
 ## Install
 
-    ``` npm install ```
+     npm install 
 
 ## Run the app
 
-    ``` npm run dev ```
+     npm run dev 
 
 
 ## Requests GET
@@ -41,7 +41,7 @@ http://localhost:4001/
 
 `POST /thing/`
 
-    curl -i -H 'Accept: application/json' -d 'name=Foo&status=new' http://localhost:7000/thing
+    
 
 ### Response
 
@@ -53,15 +53,15 @@ http://localhost:4001/
     Location: /thing/1
     Content-Length: 36
 
-    {"id":1,"name":"Foo","status":"new"}
+    
 
 ## Get a specific Thing
 
 ### Request PUT
 
-`GET /thing/id`
+` /thing/id`
 
-    curl -i -H 'Accept: application/json' http://localhost:7000/thing/1
+    
 
 ### Response
 
@@ -72,15 +72,14 @@ http://localhost:4001/
     Content-Type: application/json
     Content-Length: 36
 
-    {"id":1,"name":"Foo","status":"new"}
+    
 
 ## Get a non-existent Thing
 
 ### Request DELETE
 
-`GET /thing/id`
+``
 
-    curl -i -H 'Accept: application/json' http://localhost:7000/thing/9999
 
 ### Response
 
@@ -91,4 +90,4 @@ http://localhost:4001/
     Content-Type: application/json
     Content-Length: 35
 
-    {"status":404,"reason":"Not found"}
+    
