@@ -22,6 +22,11 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/", (req, res) => {
+  return res.status(200).send({
+    message: "Seja bem vindo a API do Hyde Desk"
+  })
+})
 // Rotas
 const tecnicoRoutes = require("./src/Routes/tecnico.routes");
 const chamadoRoutes = require("./src/Routes/chamado.routes");
