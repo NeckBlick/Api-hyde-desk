@@ -4,7 +4,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const routes = express.Router();
 const db = require("../../conexao");
-const multer = require("multer");
 const upload = require("../../middlewares/uploadImagens");
 const login = require("../../middlewares/login")
 

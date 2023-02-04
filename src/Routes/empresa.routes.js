@@ -27,6 +27,7 @@ routes.get("/", (req, res, next) => {
   });
 });
 
+// Buscar uma empresa
 routes.get("/:id", (req, res, next) =>{
   const empresa = req.params.id
 
