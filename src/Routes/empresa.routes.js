@@ -1,6 +1,8 @@
 const express = require("express");
 const db = require("../../conexao");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const login = require("../../middlewares/login")
 const routes = express.Router();
 
 // Buscar todas as empresas
@@ -71,30 +73,30 @@ routes.post("/cadastro", (req, res, next) => {
   } = req.body;
 
   if (!nome) {
-    return res.status(422).send({ message: "O nome e obrigatorio!" });
+    return res.status(422).send({ message: "O nome é obrigatório!" });
   }
   if (!cnpj) {
-    return res.status(422).send({ message: "O cnpj e obrigatorio!" });
+    return res.status(422).send({ message: "O cnpj é obrigatório!" });
   }
   if (!cep) {
-    return res.status(422).send({ message: "O cep e obrigatorio!" });
+    return res.status(422).send({ message: "O cep é obrigatório!" });
   }
   if (!numero_endereco) {
     return res
       .status(422)
-      .send({ message: "O número do endereço e obrigatorio!" });
+      .send({ message: "O número do endereço é obrigatório!" });
   }
   if (!telefone) {
-    return res.status(422).send({ message: "O telefone e obrigatorio!" });
+    return res.status(422).send({ message: "O telefone é obrigatório!" });
   }
   if (!email) {
-    return res.status(422).send({ message: "O email e obrigatorio!" });
+    return res.status(422).send({ message: "O email é obrigatório!" });
   }
   if (!senha) {
-    return res.status(422).send({ message: "A senha e obrigatorio!" });
+    return res.status(422).send({ message: "A senha é obrigatório!" });
   }
   if (senha != confirmarSenha) {
-    return res.status(422).send({ message: "As senhas sao diferentes!" });
+    return res.status(422).send({ message: "As senhas são diferentes!" });
   }
 
   // Conexão com o banco de dados
@@ -110,7 +112,7 @@ routes.post("/cadastro", (req, res, next) => {
         return res.status(500).send({ erro: erro });
       }
       if (result.length > 0) {
-        return res.status(409).send({ message: "Empresa ja cadastado" });
+        return res.status(409).send({ message: "Empresa já cadastada!" });
       } else {
         // Criptografia da senha
         bcrypt.genSalt(10, (err, salt) => {
@@ -123,7 +125,7 @@ routes.post("/cadastro", (req, res, next) => {
             }
 
             let query =
-              "INSERT INTO empresa (nome, cnpj, cep, numero_endereco, telefone, email, senha) VALUES (?, ?, ?, ?, ?,?, ?)";
+              "INSERT INTO empresas (nome, cnpj, cep, numero_endereco, telefone, email, senha) VALUES (?, ?, ?, ?, ?,?, ?)";
            
             conn.query(
               query,
@@ -147,6 +149,57 @@ routes.post("/cadastro", (req, res, next) => {
           });
         });
       }
+    });
+  });
+});
+
+// Login
+routes.post("/login", login,(req, res) => {
+  const { cnpj, senha } = req.body;
+
+  if (!cnpj) {
+    return res.status(422).send({ message: "O cnpj é obrigatório!" });
+  }
+  if (!senha) {
+    return res.status(422).send({ message: "A senha é obrigatória!" });
+  }
+
+  db.getConnection((err, conn) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).send({ erro: err });
+    }
+    const query = "SELECT * FROM empresas WHERE cnpj = ?";
+    conn.query(query, [cnpj], (erro, result, fields) => {
+      conn.resume();
+      if (erro) {
+        console.log(erro);
+        return res.status(500).send({ erro: erro });
+      }
+      let results = JSON.parse(JSON.stringify(result));
+      console.log(results);
+      if (results.length < 1) {
+        return res.status(401).send({ message: "Falha na autenticação!" });
+      }
+      console.log(senha);
+      console.log(results[0].senha);
+      bcrypt.compare(senha, results[0].senha, (erro, result) => {
+        if (erro) {
+          return res.status(401).send({ message: "Falha na autenticação!" });
+        }
+        console.log(result);
+        if (result) {
+          let token = jwt.sign({
+            id_empresa: results[0].id_tecnico,
+            cnpj: results[0].matricula
+          }, process.env.JWT_KEY,
+          {
+            expiresIn: "1d"
+          })
+          return res.status(200).send({ message: "Autenticado com sucesso!", token: token });
+        }
+        return res.status(401).send({ message: "Matricula ou senha inválida!" });
+      });
     });
   });
 });
