@@ -12,7 +12,7 @@ routes.get("/", (req, res, next) => {
       return (console.log(error))
     }
     conn.query(
-      "SELECT * FROM empresa",
+      "SELECT * FROM empresas",
 
       (error, result, field) => {
         conn.resume();
