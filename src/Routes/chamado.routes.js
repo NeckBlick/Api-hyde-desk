@@ -19,7 +19,7 @@ routes.get("/", (req, res, next) => {
     let query = "";
 
     if (status) {
-      query = `SELECT * FROM chamados WHERE status = '${status}'`;
+      query = `SELECT * FROM chamados WHERE status_chamado = '${status}'`;
     } else {
       query = "SELECT * FROM chamados";
     }
@@ -107,7 +107,7 @@ routes.post("/criar", upload.single("anexo"), (req, res, next) => {
     }
 
     let query =
-      "INSERT INTO chamados (prioridade, patrimonio, problema, descricao, anexo, setor, cod_verificacao, status, data, tecnico_id, funcionario_id) VALUES (?, ?, ?, ?, ?, ?, ?, 'pendente', NOW(), NULL, ?)";
+      "INSERT INTO chamados (prioridade, patrimonio, problema, descricao, anexo, setor, cod_verificacao, status_chamado, data, tecnico_id, funcionario_id) VALUES (?, ?, ?, ?, ?, ?, ?, 'pendente', NOW(), NULL, ?)";
 
     conn.query(
       query,
@@ -158,9 +158,9 @@ routes.put("/atualizar/:id", (req, res, next) => {
 
     let query = "";
     if (tecnico_id) {
-      query = `UPDATE chamados SET status = '${status}', tecnico_id = ${tecnico_id} WHERE id_chamado = ${id}`;
+      query = `UPDATE chamados SET status_chamado = '${status}', tecnico_id = ${tecnico_id} WHERE id_chamado = ${id}`;
     } else {
-      query = `UPDATE chamados SET status = '${status}' WHERE id_chamado = ${id}`;
+      query = `UPDATE chamados SET status_chamado = '${status}' WHERE id_chamado = ${id}`;
     }
 
     conn.query(query, (error, result, fields) => {
