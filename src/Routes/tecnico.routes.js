@@ -9,10 +9,9 @@ const login = require("../../middlewares/login");
 
 // Cadastrar tecnico
 routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
-  const foto = req.file.path;
   const {
     nome,
-    cpf_cnpj,
+    cpf,
     email,
     especialidade,
     telefone,
@@ -20,12 +19,14 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
     confirmsenha,
   } = req.body;
 
+  const foto = req.file.path;
+
   // Validação
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
   }
-  if (!cpf_cnpj) {
-    return res.status(422).send({ message: "O CPF ou CNPJ é obrigatório!" });
+  if (!cpf) {
+    return res.status(422).send({ message: "O CPF é obrigatório!" });
   }
   if (!email) {
     return res.status(422).send({ message: "O email é obrigatório!" });
@@ -64,8 +65,8 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
         erro: erro,
       });
     }
-    let query = "SELECT * FROM tecnicos WHERE cpf_cnpj = ?";
-    conn.query(query, [cpf_cnpj], (erro, result) => {
+    let query = "SELECT * FROM tecnicos WHERE cpf = ?";
+    conn.query(query, [cpf], (erro, result) => {
       if (erro) {
         return res.status(500).send({ erro: erro });
       }
@@ -83,13 +84,13 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
             }
 
             let query =
-              "INSERT INTO tecnicos (nome, cpf_cnpj, email, telefone, especialidade, matricula, senha, foto, status_tecnico) VALUES (?,?,?,?,?,?,?,?, 'Ativo')";
+              "INSERT INTO tecnicos (nome, cpf, email, telefone, especialidade, matricula, senha, foto, status_tecnico) VALUES (?,?,?,?,?,?,?,?, 'Ativo')";
 
             conn.query(
               query,
               [
                 nome,
-                cpf_cnpj,
+                cpf,
                 email,
                 telefone,
                 especialidade,
@@ -123,10 +124,10 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
 });
 
 // Login
-routes.post("/login", login, (req, res) => {
-  const { cpf_cnpj, senha } = req.body;
+routes.post("/login", (req, res) => {
+  const { cpf, senha } = req.body;
 
-  if (!cpf_cnpj) {
+  if (!cpf) {
     return res.status(422).send({ message: "O cpf é obrigatório!" });
   }
   if (!senha) {
@@ -138,8 +139,8 @@ routes.post("/login", login, (req, res) => {
       console.log(err);
       return res.status(500).send({ erro: err });
     }
-    const query = "SELECT * FROM tecnicos WHERE cpf_cnpj = ?";
-    conn.query(query, [cpf_cnpj], (erro, result, fields) => {
+    const query = "SELECT * FROM tecnicos WHERE cpf = ?";
+    conn.query(query, [cpf], (erro, result, fields) => {
       conn.resume();
       if (erro) {
         console.log(erro);
@@ -148,7 +149,7 @@ routes.post("/login", login, (req, res) => {
       let results = JSON.parse(JSON.stringify(result));
       console.log(results);
       if (results.length < 1) {
-        return res.status(401).send({ message: "Falha na autenticação!" });
+        return res.status(401).send({ message: "Cpf ou senha inválidos!" });
       }
       console.log(senha);
       console.log(results[0].senha);
@@ -161,7 +162,7 @@ routes.post("/login", login, (req, res) => {
           let token = jwt.sign(
             {
               id_tecnico: results[0].id_tecnico,
-              cpf: results[0].cpf_cnpj,
+              cpf: results[0].cpf,
             },
             process.env.JWT_KEY,
             {
@@ -181,7 +182,7 @@ routes.post("/login", login, (req, res) => {
 // Chamar técnico em específico
 routes.get("/:id", (req, res, next) => {
   const id_tecnico = req.params.id;
-  const query = `SELECT * FROM tecnico WHERE id_tecnico = ${id_tecnico}`;
+  const query = `SELECT * FROM tecnicos WHERE id_tecnico = ${id_tecnico}`;
 
   db.getConnection((error, conn) => {
     conn.query(query, (error, result) => {
