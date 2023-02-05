@@ -15,16 +15,14 @@ routes.get("/", (req, res, next) => {
     }
 
     conn.query("SELECT * FROM funcionarios", (error, result, field) => {
-      conn.resume();
+      conn.release();
       if (error) {
         return res.status(500).send({
           erro: error,
         });
       }
 
-      res.status(200).send({
-        result: result,
-      });
+      res.status(200).send(result);
     });
   });
 });
@@ -40,12 +38,12 @@ routes.get("/:id", (req, res, next) => {
     }
 
     conn.query(query, (error, result) => {
-      conn.resume();
+      conn.release();
       if (error) {
         return res.status(500).send({ error: error });
       }
 
-      res.status(200).send({ result: result });
+      res.status(200).send(result[0]);
     });
   });
 });
@@ -62,7 +60,7 @@ routes.put("/editar/:id", (req, res, next) => {
     const query_get = `SELECT senha, usuario FROM funcionarios WHERE id_funcionario = ${id_funcionario}`;
 
     conn.query(query_get, (error, result) => {
-      conn.resume();
+      conn.release();
       if (error) {
         return res.status(500).send({ error: error });
       }
@@ -76,7 +74,7 @@ routes.put("/editar/:id", (req, res, next) => {
     const query = `UPDATE funcionarios SET usuario = '${nome_usuario}', senha = '${senha}' WHERE id_funcionario = ${id_funcionario}`;
 
     conn.query(query, (error, result) => {
-      conn.resume();
+      conn.release();
       if (error) {
         return res.status(500).send({ error: error });
       }
@@ -134,7 +132,7 @@ routes.post("/cadastro", async (req, res, next) => {
               return console.log(errorCrypt);
             }
 
-            let query = `INSERT INTO funcionarios (nome, usuario, matricula, senha, empresa_id) SELECT '${nome}','${usuario}','${matricula}','${hashSenha}', id_empresa FROM empresas WHERE nome LIKE '${nome_empresa}'`;
+            let query = `INSERT INTO funcionarios (nome, usuario, matricula, senha, status_funcionario,empresa_id) SELECT '${nome}','${usuario}','${matricula}','${hashSenha}', 'Ativo',id_empresa FROM empresas WHERE nome LIKE '${nome_empresa}'`;
 
             conn.query(query, (error, result, fields) => {
               conn.release();
@@ -178,7 +176,7 @@ routes.post("/login", login, (req, res) => {
     }
     const query = "SELECT * FROM funcionarios WHERE matricula = ?";
     conn.query(query, [matricula], (erro, result, fields) => {
-      conn.resume();
+      conn.release();
       if (erro) {
         console.log(erro);
         return res.status(500).send({ erro: erro });
