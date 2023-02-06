@@ -64,7 +64,7 @@ routes.post("/cadastro", (req, res, next) => {
     telefone,
     email,
     senha,
-    confirmarSenha,
+    confirmarsenha,
   } = req.body;
 
   if (!nome) {
@@ -90,7 +90,7 @@ routes.post("/cadastro", (req, res, next) => {
   if (!senha) {
     return res.status(422).send({ message: "A senha é obrigatório!" });
   }
-  if (senha != confirmarSenha) {
+  if (senha != confirmarsenha) {
     return res.status(422).send({ message: "As senhas são diferentes!" });
   }
 
@@ -149,7 +149,7 @@ routes.post("/cadastro", (req, res, next) => {
 });
 
 // Login
-routes.post("/login", login, (req, res) => {
+routes.post("/login", (req, res) => {
   const { cnpj, senha } = req.body;
 
   if (!cnpj) {

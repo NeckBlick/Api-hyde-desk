@@ -159,7 +159,7 @@ routes.post("/cadastro", async (req, res, next) => {
 });
 
 // Login
-routes.post("/login", login, (req, res) => {
+routes.post("/login",  (req, res) => {
   const { matricula, senha } = req.body;
 
   if (!matricula) {
