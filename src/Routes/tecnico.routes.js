@@ -8,7 +8,7 @@ const upload = require("../../middlewares/uploadImagens");
 const login = require("../../middlewares/login");
 
 // Cadastrar tecnico
-routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
+routes.post("/cadastro", upload.single("foto"), async (req, res) => {
   const { nome, cpf, email, especialidade, telefone, senha, confirmsenha } =
     req.body;
 
