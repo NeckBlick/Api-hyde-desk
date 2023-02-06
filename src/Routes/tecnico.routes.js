@@ -12,10 +12,6 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
   const { nome, cpf, email, especialidade, telefone, senha, confirmsenha } =
     req.body;
 
-  const foto = req.file.path;
-
-  console.log(foto)
-
   // Validação
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
@@ -26,11 +22,11 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
   if (!email) {
     return res.status(422).send({ message: "O email é obrigatório!" });
   }
-  if (!especialidade) {
-    return res.status(422).send({ message: "A especialidade é obrigatório!" });
-  }
   if (!telefone) {
     return res.status(422).send({ message: "O telefone é obrigatório!" });
+  }
+  if (!especialidade) {
+    return res.status(422).send({ message: "A especialidade é obrigatório!" });
   }
   if (!senha) {
     return res.status(422).send({ message: "A senha é obrigatório!" });
@@ -38,6 +34,7 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
   if (senha != confirmsenha) {
     return res.status(422).send({ message: "As senhas são diferentes!" });
   }
+  const foto = req.file;
   if (!foto) {
     return res.status(422).send({ message: "A foto é obrigatório!" });
   }
@@ -91,7 +88,7 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
                 especialidade,
                 matricula,
                 hashSenha,
-                foto,
+                foto.path,
               ],
               (error, result, fields) => {
                 conn.release();
