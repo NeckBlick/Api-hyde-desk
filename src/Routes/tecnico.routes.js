@@ -14,6 +14,8 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
 
   const foto = req.file.path;
 
+  console.log(foto)
+
   // Validação
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
