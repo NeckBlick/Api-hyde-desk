@@ -181,24 +181,32 @@ routes.post("/login", login,(req, res) => {
       if (results.length < 1) {
         return res.status(401).send({ message: "Falha na autenticação!" });
       }
-      console.log(senha);
-      console.log(results[0].senha);
+
+      let id = results[0].id_empresa
+
       bcrypt.compare(senha, results[0].senha, (erro, result) => {
         if (erro) {
           return res.status(401).send({ message: "Falha na autenticação!" });
         }
         console.log(result);
         if (result) {
-          let token = jwt.sign({
-            id_empresa: results[0].id_tecnico,
-            cnpj: results[0].matricula
-          }, process.env.JWT_KEY,
-          {
-            expiresIn: "1d"
-          })
-          return res.status(200).send({ message: "Autenticado com sucesso!", token: token });
+          let token = jwt.sign(
+            {
+              id_empresa: results[0].id_empresa,
+              cnpj: results[0].matricula,
+            },
+            process.env.JWT_KEY,
+            {
+              expiresIn: "1d",
+            }
+          );
+          return res
+            .status(200)
+            .send({ message: "Autenticado com sucesso!", token: token, id: id, tipo: "empresas",});
         }
-        return res.status(401).send({ message: "Matricula ou senha inválida!" });
+        return res
+          .status(401)
+          .send({ message: "CNPJ ou senha inválidos!" });
       });
     });
   });
