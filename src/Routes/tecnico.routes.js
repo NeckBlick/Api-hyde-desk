@@ -9,9 +9,9 @@ const login = require("../../middlewares/login");
 
 // Cadastrar tecnico
 routes.post("/cadastro", upload.single("foto"), async (req, res) => {
-  const { nome, cpf, email, especialidade, telefone, senha, confirmsenha } = req.body;
-  console.log(req.file)
-  
+  const { nome, cpf, email, especialidade, telefone, senha, confirmsenha } =
+    req.body;
+
   // Validação
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
