@@ -39,4 +39,9 @@ app.use("/chamados", chamadoRoutes);
 app.use("/empresas", empresaRoutes);
 app.use("/funcionarios", funcionarioRoutes);
 
+// Inicializar o servidor
+app.listen(process.env.PORT, () => {
+    console.log("Running...")
+});
+
 module.exports = app;
