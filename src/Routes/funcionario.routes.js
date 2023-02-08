@@ -132,7 +132,9 @@ routes.post("/cadastro", async (req, res, next) => {
               return console.log(errorCrypt);
             }
 
+
             let query = `INSERT INTO funcionarios (nome, usuario, matricula, senha, status_funcionario,empresa_id) SELECT '${nome}','${usuario}','${matricula}','${hashSenha}', 'Ativo',id_empresa FROM empresas WHERE nome LIKE '${nome_empresa}'`;
+
 
             conn.query(query, (error, result, fields) => {
               conn.release();
@@ -186,8 +188,9 @@ routes.post("/login",  (req, res) => {
       if (results.length < 1) {
         return res.status(401).send({ message: "Falha na autenticação" });
       }
-      console.log(senha);
-      console.log(results[0].senha);
+
+      let id = results[0].id_funcionario
+
       bcrypt.compare(senha, results[0].senha, (erro, result) => {
         if (erro) {
           return res.status(401).send({ message: "Falha na autenticação" });
@@ -196,7 +199,7 @@ routes.post("/login",  (req, res) => {
         if (result) {
           let token = jwt.sign(
             {
-              id_funcionario: results[0].id_tecnico,
+              id_funcionario: results[0].id_funcionario,
               matricula: results[0].matricula,
             },
             process.env.JWT_KEY,
@@ -206,7 +209,7 @@ routes.post("/login",  (req, res) => {
           );
           return res
             .status(200)
-            .send({ message: "Autenticado com sucesso!", token: token });
+            .send({ message: "Autenticado com sucesso!", token: token, id: id , tipo: "funcionarios" });
         }
         return res
           .status(401)

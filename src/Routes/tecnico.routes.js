@@ -9,9 +9,9 @@ const login = require("../../middlewares/login");
 
 // Cadastrar tecnico
 routes.post("/cadastro", upload.single("foto"), async (req, res) => {
-  const { nome, cpf, email, especialidade, telefone, senha, confirmsenha } = req.body;
-  console.log(req.file)
-  
+  const { nome, cpf, email, especialidade, telefone, senha, confirmsenha } =
+    req.body;
+
   // Validação
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
@@ -137,17 +137,16 @@ routes.post("/login", (req, res) => {
         return res.status(500).send({ erro: erro });
       }
       let results = JSON.parse(JSON.stringify(result));
-      console.log(results);
       if (results.length < 1) {
         return res.status(401).send({ message: "Cpf ou senha inválidos!" });
       }
-      console.log(senha);
-      console.log(results[0].senha);
+
+      let id = results[0].id_tecnico
+
       bcrypt.compare(senha, results[0].senha, (erro, result) => {
         if (erro) {
           return res.status(401).send({ message: "Falha na autenticação!" });
         }
-        console.log(result);
         if (result) {
           let token = jwt.sign(
             {
@@ -161,7 +160,7 @@ routes.post("/login", (req, res) => {
           );
           return res
             .status(200)
-            .send({ message: "Autenticado com sucesso!", token: token });
+            .send({ message: "Autenticado com sucesso!", token: token, id: id , tipo: "tecnicos"});
         }
         return res.status(401).send({ message: "Cpf ou senha inválidos!" });
       });

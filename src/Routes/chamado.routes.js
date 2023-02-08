@@ -68,9 +68,13 @@ routes.get("/:id", (req, res, next) => {
 
 // Criação dos chamados
 routes.post("/criar", upload.single("anexo"), (req, res, next) => {
-  const anexo = req.file.path;
+  let anexo = null;
   const { prioridade, patrimonio, problema, descricao, setor, funcionario_id } =
     req.body;
+
+  if (req.file) {
+    anexo = req.file.path
+  }
 
   if (!prioridade) {
     return res.status(422).send({ message: "A prioridade é obrigatório." });
