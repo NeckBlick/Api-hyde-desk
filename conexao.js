@@ -3,7 +3,7 @@ const mysql = require("mysql");
 const fs = require("fs");
 
 
-const serverca = fs.readFileSync('./DigiCertGlobalRootCA.crt.pem', "utf8");
+
 
 
 const db = mysql.createPool({
@@ -14,7 +14,7 @@ const db = mysql.createPool({
   database: process.env.DB_NAME,
   ssl:{
     rejectUnauthorized: true,
-    ca: serverca
+    ca: process.env.DB_SSL
   }
 });
 
