@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 
 app.get("/", (req, res) => {
   return res.status(200).send({
-    message: "Seja bem vindo a API do Hyde Desk"
+    message: "Seja bem vindo a API do"
   })
 })
 // Rotas

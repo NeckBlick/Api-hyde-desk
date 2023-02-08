@@ -8,23 +8,23 @@ const upload = require("../../middlewares/uploadImagens");
 const login = require("../../middlewares/login");
 
 // Cadastrar tecnico
-routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
-  const foto = req.file.path;
+routes.post("/cadastro", upload.single("foto"), async (req, res) => {
   const {
     nome,
-    cpf_cnpj,
+    cpf,
     email,
     especialidade,
     telefone,
     senha,
     confirmsenha,
   } = req.body;
+  const foto = req.file.path;
 
   // Validação
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
   }
-  if (!cpf_cnpj) {
+  if (!cpf) {
     return res.status(422).send({ message: "O CPF ou CNPJ é obrigatório!" });
   }
   if (!email) {
@@ -64,13 +64,13 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
         erro: erro,
       });
     }
-    let query = "SELECT * FROM tecnicos WHERE cpf_cnpj = ?";
-    conn.query(query, [cpf_cnpj], (erro, result) => {
+    let query = "SELECT * FROM tecnicos WHERE cpf = ?";
+    conn.query(query, [cpf], (erro, result) => {
       if (erro) {
         return res.status(500).send({ erro: erro });
       }
       if (result.length > 0) {
-        return res.status(409).send({ message: "Técnico já cadastado" });
+        return res.status(409).send({ message: "Técnico já cadastado!" });
       } else {
         // Criptografia de senha
         bcrypt.genSalt(10, (err, salt) => {
@@ -83,13 +83,13 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
             }
 
             let query =
-              "INSERT INTO tecnicos (nome, cpf_cnpj, email, telefone, especialidade, matricula, senha, foto, status_tecnico) VALUES (?,?,?,?,?,?,?,?, 'Ativo')";
+              "INSERT INTO tecnicos (nome, cpf, email, telefone, especialidade, matricula, senha, foto, status_tecnico) VALUES (?,?,?,?,?,?,?,?, 'Ativo')";
 
             conn.query(
               query,
               [
                 nome,
-                cpf_cnpj,
+                cpf,
                 email,
                 telefone,
                 especialidade,
@@ -124,9 +124,9 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
 
 // Login
 routes.post("/login", login, (req, res) => {
-  const { cpf_cnpj, senha } = req.body;
+  const { cpf, senha } = req.body;
 
-  if (!cpf_cnpj) {
+  if (!cpf) {
     return res.status(422).send({ message: "O cpf é obrigatório!" });
   }
   if (!senha) {
@@ -138,7 +138,7 @@ routes.post("/login", login, (req, res) => {
       console.log(err);
       return res.status(500).send({ erro: err });
     }
-    const query = "SELECT * FROM tecnicos WHERE cpf_cnpj = ?";
+    const query = "SELECT * FROM tecnicos WHERE cpf = ?";
     conn.query(query, [cpf_cnpj], (erro, result, fields) => {
       conn.resume();
       if (erro) {
@@ -148,7 +148,7 @@ routes.post("/login", login, (req, res) => {
       let results = JSON.parse(JSON.stringify(result));
       console.log(results);
       if (results.length < 1) {
-        return res.status(401).send({ message: "Falha na autenticação!" });
+        return res.status(401).send({ message: "Cpf ou senha inválidos!" });
       }
       console.log(senha);
       console.log(results[0].senha);
