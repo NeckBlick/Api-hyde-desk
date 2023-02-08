@@ -6,7 +6,7 @@ const routes = express.Router();
 
 // Buscar todos os chamados
 routes.get("/", (req, res, next) => {
-  const { status } = req.query;
+  const { status, tecnico_id } = req.query;
 
   db.getConnection((error, conn) => {
     if (error) {
@@ -16,12 +16,18 @@ routes.get("/", (req, res, next) => {
       });
     }
 
-    let query = "";
+    let query = "SELECT * FROM chamados";
+
+    if (tecnico_id) {
+      query = `SELECT * FROM chamados WHERE tecnico_id = '${tecnico_id}'`;
+    }
 
     if (status) {
       query = `SELECT * FROM chamados WHERE status_chamado = '${status}'`;
-    } else {
-      query = "SELECT * FROM chamados";
+    }
+
+    if (tecnico_id && status) {
+      query = `SELECT * FROM chamados WHERE status_chamado = '${status} && tecnico_id = '${tecnico_id}'`;
     }
 
     conn.query(query, (error, result, field) => {
@@ -73,7 +79,7 @@ routes.post("/criar", upload.single("anexo"), (req, res, next) => {
     req.body;
 
   if (req.file) {
-    anexo = req.file.path
+    anexo = req.file.path;
   }
 
   if (!prioridade) {
