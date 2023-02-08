@@ -8,18 +8,9 @@ const upload = require("../../middlewares/uploadImagens");
 const login = require("../../middlewares/login");
 
 // Cadastrar tecnico
-routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
-  const {
-    nome,
-    cpf,
-    email,
-    especialidade,
-    telefone,
-    senha,
-    confirmsenha,
-  } = req.body;
-
-  const foto = req.file.path;
+routes.post("/cadastro", upload.single("foto"), async (req, res) => {
+  const { nome, cpf, email, especialidade, telefone, senha, confirmsenha } =
+    req.body;
 
   // Validação
   if (!nome) {
@@ -31,11 +22,11 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
   if (!email) {
     return res.status(422).send({ message: "O email é obrigatório!" });
   }
-  if (!especialidade) {
-    return res.status(422).send({ message: "A especialidade é obrigatório!" });
-  }
   if (!telefone) {
     return res.status(422).send({ message: "O telefone é obrigatório!" });
+  }
+  if (!especialidade) {
+    return res.status(422).send({ message: "A especialidade é obrigatório!" });
   }
   if (!senha) {
     return res.status(422).send({ message: "A senha é obrigatório!" });
@@ -43,6 +34,7 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
   if (senha != confirmsenha) {
     return res.status(422).send({ message: "As senhas são diferentes!" });
   }
+  const foto = req.file;
   if (!foto) {
     return res.status(422).send({ message: "A foto é obrigatório!" });
   }
@@ -96,7 +88,7 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
                 especialidade,
                 matricula,
                 hashSenha,
-                foto,
+                foto.path,
               ],
               (error, result, fields) => {
                 conn.release();
@@ -108,12 +100,10 @@ routes.post("/cadastro", upload.single("anexo"), async (req, res) => {
                   });
                 }
 
-                return res
-                  .status(201)
-                  .send({
-                    message: "Técnico cadastrado com sucesso!",
-                    id_tecnico: result.insertId,
-                  });
+                return res.status(201).send({
+                  message: "Técnico cadastrado com sucesso!",
+                  id_tecnico: result.insertId,
+                });
               }
             );
           });
@@ -141,7 +131,7 @@ routes.post("/login", (req, res) => {
     }
     const query = "SELECT * FROM tecnicos WHERE cpf = ?";
     conn.query(query, [cpf], (erro, result, fields) => {
-      conn.resume();
+      conn.release();
       if (erro) {
         console.log(erro);
         return res.status(500).send({ erro: erro });
@@ -178,25 +168,45 @@ routes.post("/login", (req, res) => {
   });
 });
 
+routes.get("/", (req, res, next) => {
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({ error: error });
+    }
+
+    let query = "SELECT * FROM tecnicos";
+    conn.query(query, (error, results, fields) => {
+      conn.release();
+      if (error) {
+        return res.status(500).send({ error: error });
+      }
+
+      return res.status(200).send(results);
+    });
+  });
+});
+
 // Chamar técnico em específico
 routes.get("/:id", (req, res, next) => {
   const id_tecnico = req.params.id;
   const query = `SELECT * FROM tecnicos WHERE id_tecnico = ${id_tecnico}`;
 
   db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({ error: error });
+    }
+
     conn.query(query, (error, result) => {
+      conn.release();
       if (error) {
         return res.status(500).send({
           error: error,
         });
       }
-      return res.status(200).send({
-        result: result,
-      });
+      return res.status(200).send(result[0]);
     });
   });
 });
-
 
 //Deletar técnico
 routes.delete("/deletar/:id", (req, res) => {
@@ -219,7 +229,9 @@ routes.delete("/deletar/:id", (req, res) => {
               .status(400)
               .send({ message: "Não foi possivel deletar o técnico!" });
           }
-          return res.status(200).send({ message: "O usuário foi deletado com sucesso!" });
+          return res
+            .status(200)
+            .send({ message: "O usuário foi deletado com sucesso!" });
         });
       } else {
         conn.release();
