@@ -27,7 +27,7 @@ routes.get("/", (req, res, next) => {
     }
 
     if (tecnico_id && status) {
-      query = `SELECT * FROM chamados WHERE status_chamado = '${status} && tecnico_id = '${tecnico_id}'`;
+      query = `SELECT * FROM chamados WHERE status_chamado = '${status}' AND tecnico_id = '${tecnico_id}'`;
     }
 
     conn.query(query, (error, result, field) => {
