@@ -3,6 +3,6 @@ const app = require("./app");
 const server = http.createServer(app);
 
 // Inicializar o servidor
-server.listen(process.env.PORT, () => {
+server.listen(process.env.PORT || 8080, () => {
     console.log("Running...")
 });
