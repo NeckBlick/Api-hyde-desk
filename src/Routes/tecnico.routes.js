@@ -9,32 +9,15 @@ const login = require("../../middlewares/login");
 
 // Cadastrar tecnico
 routes.post("/cadastro", upload.single("foto"), async (req, res) => {
-<<<<<<< HEAD
-  const {
-    nome,
-    cpf,
-    email,
-    especialidade,
-    telefone,
-    senha,
-    confirmsenha,
-  } = req.body;
-  const foto = req.file.path;
-=======
   const { nome, cpf, email, especialidade, telefone, senha, confirmsenha } =
     req.body;
->>>>>>> 958c9ad46dc4f1ddfab875132015d4bd6f1fdcd1
 
   // Validação
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
   }
   if (!cpf) {
-<<<<<<< HEAD
-    return res.status(422).send({ message: "O CPF ou CNPJ é obrigatório!" });
-=======
     return res.status(422).send({ message: "O CPF é obrigatório!" });
->>>>>>> 958c9ad46dc4f1ddfab875132015d4bd6f1fdcd1
   }
   if (!email) {
     return res.status(422).send({ message: "O email é obrigatório!" });
@@ -131,11 +114,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
 });
 
 // Login
-<<<<<<< HEAD
-routes.post("/login", login, (req, res) => {
-=======
 routes.post("/login", (req, res) => {
->>>>>>> 958c9ad46dc4f1ddfab875132015d4bd6f1fdcd1
   const { cpf, senha } = req.body;
 
   if (!cpf) {
@@ -151,13 +130,8 @@ routes.post("/login", (req, res) => {
       return res.status(500).send({ erro: err });
     }
     const query = "SELECT * FROM tecnicos WHERE cpf = ?";
-<<<<<<< HEAD
-    conn.query(query, [cpf_cnpj], (erro, result, fields) => {
-      conn.resume();
-=======
     conn.query(query, [cpf], (erro, result, fields) => {
       conn.release();
->>>>>>> 958c9ad46dc4f1ddfab875132015d4bd6f1fdcd1
       if (erro) {
         console.log(erro);
         return res.status(500).send({ erro: erro });
