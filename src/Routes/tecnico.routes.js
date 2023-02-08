@@ -9,6 +9,7 @@ const login = require("../../middlewares/login");
 
 // Cadastrar tecnico
 routes.post("/cadastro", upload.single("foto"), async (req, res) => {
+<<<<<<< HEAD
   const {
     nome,
     cpf,
@@ -19,22 +20,30 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
     confirmsenha,
   } = req.body;
   const foto = req.file.path;
+=======
+  const { nome, cpf, email, especialidade, telefone, senha, confirmsenha } =
+    req.body;
+>>>>>>> 958c9ad46dc4f1ddfab875132015d4bd6f1fdcd1
 
   // Validação
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
   }
   if (!cpf) {
+<<<<<<< HEAD
     return res.status(422).send({ message: "O CPF ou CNPJ é obrigatório!" });
+=======
+    return res.status(422).send({ message: "O CPF é obrigatório!" });
+>>>>>>> 958c9ad46dc4f1ddfab875132015d4bd6f1fdcd1
   }
   if (!email) {
     return res.status(422).send({ message: "O email é obrigatório!" });
   }
-  if (!especialidade) {
-    return res.status(422).send({ message: "A especialidade é obrigatório!" });
-  }
   if (!telefone) {
     return res.status(422).send({ message: "O telefone é obrigatório!" });
+  }
+  if (!especialidade) {
+    return res.status(422).send({ message: "A especialidade é obrigatório!" });
   }
   if (!senha) {
     return res.status(422).send({ message: "A senha é obrigatório!" });
@@ -42,6 +51,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
   if (senha != confirmsenha) {
     return res.status(422).send({ message: "As senhas são diferentes!" });
   }
+  const foto = req.file;
   if (!foto) {
     return res.status(422).send({ message: "A foto é obrigatório!" });
   }
@@ -95,7 +105,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
                 especialidade,
                 matricula,
                 hashSenha,
-                foto,
+                foto.path,
               ],
               (error, result, fields) => {
                 conn.release();
@@ -107,12 +117,10 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
                   });
                 }
 
-                return res
-                  .status(201)
-                  .send({
-                    message: "Técnico cadastrado com sucesso!",
-                    id_tecnico: result.insertId,
-                  });
+                return res.status(201).send({
+                  message: "Técnico cadastrado com sucesso!",
+                  id_tecnico: result.insertId,
+                });
               }
             );
           });
@@ -123,7 +131,11 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
 });
 
 // Login
+<<<<<<< HEAD
 routes.post("/login", login, (req, res) => {
+=======
+routes.post("/login", (req, res) => {
+>>>>>>> 958c9ad46dc4f1ddfab875132015d4bd6f1fdcd1
   const { cpf, senha } = req.body;
 
   if (!cpf) {
@@ -139,29 +151,33 @@ routes.post("/login", login, (req, res) => {
       return res.status(500).send({ erro: err });
     }
     const query = "SELECT * FROM tecnicos WHERE cpf = ?";
+<<<<<<< HEAD
     conn.query(query, [cpf_cnpj], (erro, result, fields) => {
       conn.resume();
+=======
+    conn.query(query, [cpf], (erro, result, fields) => {
+      conn.release();
+>>>>>>> 958c9ad46dc4f1ddfab875132015d4bd6f1fdcd1
       if (erro) {
         console.log(erro);
         return res.status(500).send({ erro: erro });
       }
       let results = JSON.parse(JSON.stringify(result));
-      console.log(results);
       if (results.length < 1) {
         return res.status(401).send({ message: "Cpf ou senha inválidos!" });
       }
-      console.log(senha);
-      console.log(results[0].senha);
+
+      let id = results[0].id_tecnico
+
       bcrypt.compare(senha, results[0].senha, (erro, result) => {
         if (erro) {
           return res.status(401).send({ message: "Falha na autenticação!" });
         }
-        console.log(result);
         if (result) {
           let token = jwt.sign(
             {
               id_tecnico: results[0].id_tecnico,
-              cpf: results[0].cpf_cnpj,
+              cpf: results[0].cpf,
             },
             process.env.JWT_KEY,
             {
@@ -170,7 +186,7 @@ routes.post("/login", login, (req, res) => {
           );
           return res
             .status(200)
-            .send({ message: "Autenticado com sucesso!", token: token });
+            .send({ message: "Autenticado com sucesso!", token: token, id: id , tipo: "tecnicos"});
         }
         return res.status(401).send({ message: "Cpf ou senha inválidos!" });
       });
@@ -178,25 +194,45 @@ routes.post("/login", login, (req, res) => {
   });
 });
 
+routes.get("/", (req, res, next) => {
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({ error: error });
+    }
+
+    let query = "SELECT * FROM tecnicos";
+    conn.query(query, (error, results, fields) => {
+      conn.release();
+      if (error) {
+        return res.status(500).send({ error: error });
+      }
+
+      return res.status(200).send(results);
+    });
+  });
+});
+
 // Chamar técnico em específico
 routes.get("/:id", (req, res, next) => {
   const id_tecnico = req.params.id;
-  const query = `SELECT * FROM tecnico WHERE id_tecnico = ${id_tecnico}`;
+  const query = `SELECT * FROM tecnicos WHERE id_tecnico = ${id_tecnico}`;
 
   db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({ error: error });
+    }
+
     conn.query(query, (error, result) => {
+      conn.release();
       if (error) {
         return res.status(500).send({
           error: error,
         });
       }
-      return res.status(200).send({
-        result: result,
-      });
+      return res.status(200).send(result[0]);
     });
   });
 });
-
 
 //Deletar técnico
 routes.delete("/deletar/:id", (req, res) => {
@@ -219,7 +255,9 @@ routes.delete("/deletar/:id", (req, res) => {
               .status(400)
               .send({ message: "Não foi possivel deletar o técnico!" });
           }
-          return res.status(200).send({ message: "O usuário foi deletado com sucesso!" });
+          return res
+            .status(200)
+            .send({ message: "O usuário foi deletado com sucesso!" });
         });
       } else {
         conn.release();

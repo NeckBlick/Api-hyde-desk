@@ -15,16 +15,14 @@ routes.get("/", (req, res, next) => {
     }
 
     conn.query("SELECT * FROM funcionarios", (error, result, field) => {
-      conn.resume();
+      conn.release();
       if (error) {
         return res.status(500).send({
           erro: error,
         });
       }
 
-      res.status(200).send({
-        result: result,
-      });
+      res.status(200).send(result);
     });
   });
 });
@@ -40,12 +38,12 @@ routes.get("/:id", (req, res, next) => {
     }
 
     conn.query(query, (error, result) => {
-      conn.resume();
+      conn.release();
       if (error) {
         return res.status(500).send({ error: error });
       }
 
-      res.status(200).send({ result: result });
+      res.status(200).send(result[0]);
     });
   });
 });
@@ -62,7 +60,7 @@ routes.put("/editar/:id", (req, res, next) => {
     const query_get = `SELECT senha, usuario FROM funcionarios WHERE id_funcionario = ${id_funcionario}`;
 
     conn.query(query_get, (error, result) => {
-      conn.resume();
+      conn.release();
       if (error) {
         return res.status(500).send({ error: error });
       }
@@ -76,7 +74,7 @@ routes.put("/editar/:id", (req, res, next) => {
     const query = `UPDATE funcionarios SET usuario = '${nome_usuario}', senha = '${senha}' WHERE id_funcionario = ${id_funcionario}`;
 
     conn.query(query, (error, result) => {
-      conn.resume();
+      conn.release();
       if (error) {
         return res.status(500).send({ error: error });
       }
@@ -134,7 +132,9 @@ routes.post("/cadastro", async (req, res, next) => {
               return console.log(errorCrypt);
             }
 
-            let query = `INSERT INTO funcionarios (nome, usuario, matricula, senha, empresa_id) SELECT '${nome}','${usuario}','${matricula}','${hashSenha}', id_empresa FROM empresas WHERE nome LIKE '${nome_empresa}'`;
+
+            let query = `INSERT INTO funcionarios (nome, usuario, matricula, senha, status_funcionario,empresa_id) SELECT '${nome}','${usuario}','${matricula}','${hashSenha}', 'Ativo',id_empresa FROM empresas WHERE nome LIKE '${nome_empresa}'`;
+
 
             conn.query(query, (error, result, fields) => {
               conn.release();
@@ -161,7 +161,7 @@ routes.post("/cadastro", async (req, res, next) => {
 });
 
 // Login
-routes.post("/login", login, (req, res) => {
+routes.post("/login",  (req, res) => {
   const { matricula, senha } = req.body;
 
   if (!matricula) {
@@ -178,7 +178,7 @@ routes.post("/login", login, (req, res) => {
     }
     const query = "SELECT * FROM funcionarios WHERE matricula = ?";
     conn.query(query, [matricula], (erro, result, fields) => {
-      conn.resume();
+      conn.release();
       if (erro) {
         console.log(erro);
         return res.status(500).send({ erro: erro });
@@ -188,8 +188,9 @@ routes.post("/login", login, (req, res) => {
       if (results.length < 1) {
         return res.status(401).send({ message: "Falha na autenticação" });
       }
-      console.log(senha);
-      console.log(results[0].senha);
+
+      let id = results[0].id_funcionario
+
       bcrypt.compare(senha, results[0].senha, (erro, result) => {
         if (erro) {
           return res.status(401).send({ message: "Falha na autenticação" });
@@ -198,7 +199,7 @@ routes.post("/login", login, (req, res) => {
         if (result) {
           let token = jwt.sign(
             {
-              id_funcionario: results[0].id_tecnico,
+              id_funcionario: results[0].id_funcionario,
               matricula: results[0].matricula,
             },
             process.env.JWT_KEY,
@@ -208,7 +209,7 @@ routes.post("/login", login, (req, res) => {
           );
           return res
             .status(200)
-            .send({ message: "Autenticado com sucesso!", token: token });
+            .send({ message: "Autenticado com sucesso!", token: token, id: id , tipo: "funcionarios" });
         }
         return res
           .status(401)

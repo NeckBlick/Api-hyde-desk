@@ -2,62 +2,57 @@ const express = require("express");
 const db = require("../../conexao");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const login = require("../../middlewares/login")
+const login = require("../../middlewares/login");
 const routes = express.Router();
 
 // Buscar todas as empresas
 routes.get("/", (req, res, next) => {
   db.getConnection((error, conn) => {
-    if(error){
-      return (console.log(error))
+    if (error) {
+      return console.log(error);
     }
-    conn.query(
-      "SELECT * FROM empresa",
 
-      (error, result, field) => {
-        conn.resume();
+    let query = "SELECT * FROM empresas";
 
-        if (error) {
-          res.status(500).send({
-            error: error,
-            response: null,
-          });
-        }
-        res.status(200).send(result);
+    conn.query(query, (error, result, field) => {
+      conn.release();
+
+      if (error) {
+        res.status(500).send({
+          error: error,
+          response: null,
+        });
       }
-    );
+      res.status(200).send(result);
+    });
   });
 });
 
 // Buscar uma empresa
-routes.get("/:id", (req, res, next) =>{
-  const empresa = req.params.id
+routes.get("/:id", (req, res, next) => {
+  const empresa = req.params.id;
 
-  let query = `SELECT * FROM empresa WHERE id_empresa='${empresa}'`
+  let query = `SELECT * FROM empresas WHERE id_empresa='${empresa}'`;
 
-  db.getConnection((error, conn) =>{
-    if(error){
+  db.getConnection((error, conn) => {
+    if (error) {
       return res.status(500).send({
-        message: error
-      })
-      
+        message: error,
+      });
     }
-    conn.query(query, 
-      (error, result, field) =>{
-        conn.resume()
-  
-        if(error){
+    conn.query(query, (error, result, field) => {
+      conn.release();
+
+      if (error) {
         res.status(500).send({
           error: error,
-          response: null
-        })
+          response: null,
+        });
       }
-      res.status(200).send(result)
-      }
-      )
-  })
-})
-
+      res.status(200).send(result[0]);
+    });
+  });
+});
 
 // Cadastro das empresas
 routes.post("/cadastro", (req, res, next) => {
@@ -69,7 +64,7 @@ routes.post("/cadastro", (req, res, next) => {
     telefone,
     email,
     senha,
-    confirmarSenha,
+    confirmarsenha,
   } = req.body;
 
   if (!nome) {
@@ -95,7 +90,7 @@ routes.post("/cadastro", (req, res, next) => {
   if (!senha) {
     return res.status(422).send({ message: "A senha é obrigatório!" });
   }
-  if (senha != confirmarSenha) {
+  if (senha != confirmarsenha) {
     return res.status(422).send({ message: "As senhas são diferentes!" });
   }
 
@@ -125,15 +120,15 @@ routes.post("/cadastro", (req, res, next) => {
             }
 
             let query =
-              "INSERT INTO empresas (nome, cnpj, cep, numero_endereco, telefone, email, senha) VALUES (?, ?, ?, ?, ?,?, ?)";
-           
+              "INSERT INTO empresas (nome, cnpj, cep, numero_endereco, telefone, email, senha, status_empresa) VALUES (?, ?, ?, ?, ?, ?, ?, 'Ativo')";
+
             conn.query(
               query,
               [nome, cnpj, cep, numero_endereco, telefone, email, hashSenha],
 
               (error, result, field) => {
-                //conn.resume() serve para liberar a conexão com o banco de dados para que as conexões abertas não travem as apis
-                conn.resume();
+                //conn.release() serve para liberar a conexão com o banco de dados para que as conexões abertas não travem as apis
+                conn.release();
                 if (error) {
                   res.status(500).send({
                     error: error,
@@ -154,7 +149,7 @@ routes.post("/cadastro", (req, res, next) => {
 });
 
 // Login
-routes.post("/login", login,(req, res) => {
+routes.post("/login", (req, res) => {
   const { cnpj, senha } = req.body;
 
   if (!cnpj) {
@@ -171,7 +166,7 @@ routes.post("/login", login,(req, res) => {
     }
     const query = "SELECT * FROM empresas WHERE cnpj = ?";
     conn.query(query, [cnpj], (erro, result, fields) => {
-      conn.resume();
+      conn.release();
       if (erro) {
         console.log(erro);
         return res.status(500).send({ erro: erro });
@@ -181,24 +176,34 @@ routes.post("/login", login,(req, res) => {
       if (results.length < 1) {
         return res.status(401).send({ message: "Falha na autenticação!" });
       }
-      console.log(senha);
-      console.log(results[0].senha);
+
+      let id = results[0].id_empresa
+
       bcrypt.compare(senha, results[0].senha, (erro, result) => {
         if (erro) {
           return res.status(401).send({ message: "Falha na autenticação!" });
         }
         console.log(result);
         if (result) {
-          let token = jwt.sign({
-            id_empresa: results[0].id_tecnico,
-            cnpj: results[0].matricula
-          }, process.env.JWT_KEY,
-          {
-            expiresIn: "1d"
-          })
-          return res.status(200).send({ message: "Autenticado com sucesso!", token: token });
+          let token = jwt.sign(
+            {
+
+              id_empresa: results[0].id_empresa,
+
+              cnpj: results[0].matricula,
+            },
+            process.env.JWT_KEY,
+            {
+              expiresIn: "1d",
+            }
+          );
+          return res
+            .status(200)
+            .send({ message: "Autenticado com sucesso!", token: token, id: id, tipo: "empresas",});
         }
-        return res.status(401).send({ message: "Matricula ou senha inválida!" });
+        return res
+          .status(401)
+          .send({ message: "CNPJ ou senha inválidos!" });
       });
     });
   });
