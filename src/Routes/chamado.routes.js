@@ -6,7 +6,7 @@ const routes = express.Router();
 
 // Buscar todos os chamados
 routes.get("/", (req, res, next) => {
-  const { status, tecnico_id } = req.query;
+  const filters = req.query;
 
   db.getConnection((error, conn) => {
     if (error) {
@@ -18,16 +18,25 @@ routes.get("/", (req, res, next) => {
 
     let query = "SELECT * FROM chamados";
 
-    if (tecnico_id) {
-      query = `SELECT * FROM chamados WHERE tecnico_id = '${tecnico_id}'`;
-    }
+    let keysFilters = Object.keys(filters);
 
-    if (status) {
-      query = `SELECT * FROM chamados WHERE status_chamado = '${status}'`;
-    }
+    if (keysFilters.length !== 0) {
+      query = "SELECT * FROM chamados WHERE";
 
-    if (tecnico_id && status) {
-      query = `SELECT * FROM chamados WHERE status_chamado = '${status}' AND tecnico_id = '${tecnico_id}'`;
+      try {
+        keysFilters.forEach((key, index) => {
+          if (index !== keysFilters.length - 1) {
+            query += ` ${key} LIKE '${filters[key]}' AND`;
+          } else {
+            query += ` ${key} LIKE '${filters[key]}'`;
+          }
+        });
+      } catch (error) {
+        return res.status(500).send({
+          message: "Houve um erro, tente novamente mais tarde...",
+          erro: error,
+        });
+      }
     }
 
     conn.query(query, (error, result, field) => {
