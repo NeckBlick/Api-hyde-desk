@@ -50,7 +50,7 @@ routes.get("/:id", (req, res, next) => {
 
 // Editar um funcionário
 routes.put("/editar/:id", (req, res, next) => {
-  const { nome_usuario, senha } = req.body;
+  const { usuario, senha } = req.body;
   const id_funcionario = req.params.id;
 
   db.getConnection((error, conn) => {
@@ -60,25 +60,43 @@ routes.put("/editar/:id", (req, res, next) => {
     const query_get = `SELECT senha, usuario FROM funcionarios WHERE id_funcionario = ${id_funcionario}`;
 
     conn.query(query_get, (error, result) => {
-      conn.release();
+      // conn.release();
       if (error) {
         return res.status(500).send({ error: error });
       }
+      bcrypt.compare(senha, result[0].senha, (erro, result) => {
+        if (erro) {
+          return res.status(401).send({ message: "Falha na autenticação!" });
+        }
+        console.log(result);
+        console.log(usuario)
+        if (result) {
+          return res.status(422).send({
+            message: "A nova senha não pode ser igual a antiga!",
+          });
+        }
 
-      if (senha === result[0].senha) {
-        res.status(422).send({
-          message: "A nova senha não pode ser igual a antiga!",
+        bcrypt.genSalt(10, (err, salt) => {
+          if (err) {
+            return next(err);
+          }
+
+          bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
+            const query = `UPDATE funcionarios SET usuario = '${usuario}', senha = '${hashSenha}' WHERE id_funcionario = ${id_funcionario}`;
+
+            conn.query(query, (error, result) => {
+              conn.release();
+              if (error) {
+                return res.status(500).send({ error: error });
+              }
+            });
+
+            return res
+              .status(200)
+              .send({ mensagem: "Dados alterados com sucesso." });
+          });
         });
-      }
-    });
-    const query = `UPDATE funcionarios SET usuario = '${nome_usuario}', senha = '${senha}' WHERE id_funcionario = ${id_funcionario}`;
-
-    conn.query(query, (error, result) => {
-      conn.release();
-      if (error) {
-        return res.status(500).send({ error: error });
-      }
-      res.status(200).send({ result: result });
+      });
     });
   });
 });
@@ -221,5 +239,7 @@ routes.post("/login",  (req, res) => {
     });
   });
 });
+
+
 
 module.exports = routes;
