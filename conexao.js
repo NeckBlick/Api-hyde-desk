@@ -12,10 +12,10 @@ const db = mysql.createPool({
   password: process.env.DB_PASS,
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
-  // ssl:{
-  //   rejectUnauthorized: true,
-  //   ca: process.env.DB_SSL
-  // }
+  ssl:{
+    rejectUnauthorized: true,
+    ca: process.env.DB_SSL
+  }
 });
 
 module.exports = db;
