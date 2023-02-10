@@ -209,4 +209,60 @@ routes.post("/login", (req, res) => {
   });
 });
 
+// atualizar empresa
+routes.put("/editar/:id", (req, res, next) => {
+  const { nome, senha, cep, numero_endereco, telefone, email } = req.body;
+  const id_empresa = req.params.id;
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({ error: error });
+    }
+    const query_get = `SELECT nome, senha, cep, numero_endereco, telefone, email FROM empresas WHERE id_empresa = ${id_empresa}`;
+
+    conn.query(query_get, (error, result) => {
+      // conn.release();
+      if (error) {
+        return res.status(500).send({ error: error });
+      }
+      bcrypt.compare(senha, result[0].senha, (erro, result) => {
+        if (erro) {
+          return res.status(401).send({ message: "Falha na autenticação!" });
+        }
+        console.log(result);
+        if (result) {
+          return res.status(422).send({
+            message: "A nova senha não pode ser igual a antiga!",
+          });
+        }
+
+
+        bcrypt.genSalt(10, (err, salt) => {
+          if (err) {
+            return next(err);
+          }
+
+          bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
+
+            const query = `UPDATE empresas SET nome = '${nome}', senha = '${hashSenha}', cep = '${cep}', numero_endereco = '${numero_endereco}', telefone = '${telefone}', email = '${email}' WHERE id_empresa = ${id_empresa}`;
+
+            conn.query(query, (error, result) => {
+              conn.release();
+              if (error) {
+                return res.status(500).send({ error: error });
+              }
+            });
+    
+            return res.status(200).send({ mensagem: "Dados alterados com sucesso." })
+
+          })
+
+
+        })
+        
+      });
+    });
+  });
+});
+
 module.exports = routes;

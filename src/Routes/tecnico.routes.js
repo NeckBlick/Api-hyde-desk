@@ -241,4 +241,55 @@ routes.delete("/deletar/:id", (req, res) => {
   });
 });
 
+// Editar um Tecnico
+routes.put("/editar/:id", upload.single("foto"), (req, res, next) => {
+  const { nome, email, especialidade, telefone } = req.body;
+  const id_tecnico = req.params.id;
+
+  if (!nome) {
+    return res.status(422).send({ message: "O nome é obrigatório!" });
+  }
+
+  if (!email) {
+    return res.status(422).send({ message: "O email é obrigatório!" });
+  }
+  if (!telefone) {
+    return res.status(422).send({ message: "O telefone é obrigatório!" });
+  }
+  if (!especialidade) {
+    return res.status(422).send({ message: "A especialidade é obrigatório!" });
+  }
+  const foto = req.file;
+  if (!foto) {
+    return res.status(422).send({ message: "A foto é obrigatório!" });
+  }
+
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({ error: error });
+    }
+    const query_get = `SELECT nome, email, foto, especialidade, telefone FROM tecnicos WHERE id_tecnico = ${id_tecnico}`;
+
+    conn.query(query_get, (error, result) => {
+      // conn.release();
+      if (error) {
+        return res.status(500).send({ error: error });
+      }
+            const query = `UPDATE tecnicos SET nome = '${nome}', foto = '${foto.path}', especialidade = '${especialidade}', telefone = '${telefone}', email = '${email}' WHERE id_tecnico = ${id_tecnico}`;
+
+            conn.query(query, (error, result) => {
+              conn.release();
+              if (error) {
+                return res.status(500).send({ error: error });
+              }
+            });
+
+            return res
+              .status(200)
+              .send({ mensagem: "Dados alterados com sucesso." });
+          });
+        });
+});
+
 module.exports = routes;
