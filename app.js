@@ -39,4 +39,5 @@ app.use("/chamados", chamadoRoutes);
 app.use("/empresas", empresaRoutes);
 app.use("/funcionarios", funcionarioRoutes);
 
+
 module.exports = app;
