@@ -103,7 +103,7 @@ routes.put("/editar/:id", (req, res, next) => {
 
 // Cadastro
 routes.post("/cadastro", async (req, res, next) => {
-  const { nome, nome_empresa, matricula, usuario, senha, confirmsenha } =
+  const { nome, id_empresa, matricula, usuario, senha, confirmsenha } =
     req.body;
 
   // Validação
@@ -154,7 +154,7 @@ routes.post("/cadastro", async (req, res, next) => {
             }
 
 
-            let query = `INSERT INTO funcionarios (nome, usuario, matricula, senha, status_funcionario,empresa_id) SELECT '${nome}','${usuario}','${matricula}','${hashSenha}', 'Ativo',id_empresa FROM empresas WHERE nome LIKE '${nome_empresa}'`;
+            let query = `INSERT INTO funcionarios (nome, usuario, matricula, senha, status_funcionario, empresa_id) SELECT '${nome}','${usuario}','${matricula}','${hashSenha}', 'Ativo', '${id_empresa}'`;
 
 
             conn.query(query, (error, result, fields) => {
