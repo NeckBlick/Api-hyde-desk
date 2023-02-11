@@ -160,7 +160,7 @@ routes.post("/login", (req, res) => {
           );
           return res
             .status(200)
-            .send({ message: "Autenticado com sucesso!", token: token, id: id , tipo: "tecnicos"});
+            .send({ message: "Autenticado com sucesso!", token: token, id: id, tipo: "tecnicos" });
         }
         return res.status(401).send({ message: "Cpf ou senha inválidos!" });
       });
@@ -245,6 +245,7 @@ routes.delete("/deletar/:id", (req, res) => {
 routes.put("/editar/:id", upload.single("foto"), (req, res, next) => {
   const { nome, email, especialidade, telefone } = req.body;
   const id_tecnico = req.params.id;
+  
 
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
@@ -259,12 +260,8 @@ routes.put("/editar/:id", upload.single("foto"), (req, res, next) => {
   if (!especialidade) {
     return res.status(422).send({ message: "A especialidade é obrigatório!" });
   }
+
   const foto = req.file;
-  if (!foto) {
-    return res.status(422).send({ message: "A foto é obrigatório!" });
-  }
-
-
   db.getConnection((error, conn) => {
     if (error) {
       return res.status(500).send({ error: error });
@@ -276,20 +273,33 @@ routes.put("/editar/:id", upload.single("foto"), (req, res, next) => {
       if (error) {
         return res.status(500).send({ error: error });
       }
-            const query = `UPDATE tecnicos SET nome = '${nome}', foto = '${foto.path}', especialidade = '${especialidade}', telefone = '${telefone}', email = '${email}' WHERE id_tecnico = ${id_tecnico}`;
 
-            conn.query(query, (error, result) => {
-              conn.release();
-              if (error) {
-                return res.status(500).send({ error: error });
-              }
-            });
+      if (foto) {
+        const query = `UPDATE tecnicos SET nome = '${nome}', foto = ?, especialidade = '${especialidade}', telefone = '${telefone}', email = '${email}' WHERE id_tecnico = ${id_tecnico}`;
 
-            return res
-              .status(200)
-              .send({ mensagem: "Dados alterados com sucesso." });
-          });
+        conn.query(query, [foto.path], (error, result) => {
+          conn.release();
+          if (error) {
+            return res.status(500).send({ error: error });
+          }
         });
+      } else {
+        const query = `UPDATE tecnicos SET nome = '${nome}', foto = ?, especialidade = '${especialidade}', telefone = '${telefone}', email = '${email}' WHERE id_tecnico = ${id_tecnico}`;
+        conn.query(query, [result[0].foto], (error, result) => {
+          conn.release();
+          if (error) {
+            return res.status(500).send({ error: error });
+          }
+        });
+      }
+
+
+
+      return res
+        .status(200)
+        .send({ mensagem: "Dados alterados com sucesso." });
+    });
+  });
 });
 
 module.exports = routes;
