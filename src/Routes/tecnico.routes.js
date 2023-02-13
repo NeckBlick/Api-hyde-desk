@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
 const routes = express.Router();
 const db = require("../../conexao");
 const upload = require("../../middlewares/uploadImagens");
@@ -274,6 +275,7 @@ routes.put("/editar/:id", upload.single("foto"), (req, res, next) => {
         return res.status(500).send({ error: error });
       }
 
+      const foto_antiga = result[0].foto
       if (foto) {
         const query = `UPDATE tecnicos SET nome = '${nome}', foto = ?, especialidade = '${especialidade}', telefone = '${telefone}', email = '${email}' WHERE id_tecnico = ${id_tecnico}`;
 
@@ -282,7 +284,12 @@ routes.put("/editar/:id", upload.single("foto"), (req, res, next) => {
           if (error) {
             return res.status(500).send({ error: error });
           }
+          console.log(foto_antiga)
+          fs.unlinkSync(foto_antiga)
+
         });
+
+      
       } else {
         const query = `UPDATE tecnicos SET nome = '${nome}', foto = ?, especialidade = '${especialidade}', telefone = '${telefone}', email = '${email}' WHERE id_tecnico = ${id_tecnico}`;
         conn.query(query, [result[0].foto], (error, result) => {
