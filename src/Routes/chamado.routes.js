@@ -16,12 +16,13 @@ routes.get("/", (req, res, next) => {
       });
     }
 
-    let query = "SELECT * FROM chamados";
+    let query =
+      "SELECT *, e.nome AS nome_empresa FROM chamados AS c INNER JOIN funcionarios AS f ON f.id_funcionario = c.funcionario_id INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
 
     let keysFilters = Object.keys(filters);
 
     if (keysFilters.length !== 0) {
-      query = "SELECT * FROM chamados WHERE";
+      query += " WHERE";
 
       try {
         keysFilters.forEach((key, index) => {
@@ -39,7 +40,7 @@ routes.get("/", (req, res, next) => {
       }
     }
 
-    conn.query(query, (error, result, field) => {
+    conn.query(query, (error, results, field) => {
       conn.release();
 
       if (error) {
@@ -48,7 +49,32 @@ routes.get("/", (req, res, next) => {
           response: null,
         });
       }
-      res.status(200).send(result);
+      res.status(200).send(
+        results.map((result) => {
+          return {
+            id_chamado: result.id_chamado,
+            prioridade: result.prioridade,
+            patrimonio: result.patrimonio,
+            problema: result.problema,
+            anexo: result.anexo,
+            setor: result.setor,
+            descricao: result.descricao,
+            cod_verificacao: result.cod_verificacao,
+            status_chamado: result.status_chamado,
+            data: result.data,
+            tecnico_id: result.tecnico_id,
+            funcionario_id: result.funcionario_id,
+            empresa: {
+              empresa_id: result.id_empresa,
+              nome_empresa: result.nome_empresa,
+              cep: result.cep,
+              numero_endereco: result.numero_endereco,
+              telefone: result.telefone
+
+            },
+          };
+        })
+      );
     });
   });
 });
