@@ -58,7 +58,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
         erro: erro,
       });
     }
-    let query = "SELECT * FROM tecnicos WHERE cpf = ?";
+    let query = "SELECT * FROM tecnicos WHERE cpf_cnpj = ?";
     conn.query(query, [cpf], (erro, result) => {
       if (erro) {
         return res.status(500).send({ erro: erro });
@@ -77,7 +77,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
             }
 
             let query =
-              "INSERT INTO tecnicos (nome, cpf, email, telefone, especialidade, matricula, senha, foto, status_tecnico) VALUES (?,?,?,?,?,?,?,?, 'Ativo')";
+              "INSERT INTO tecnicos (nome, cpf_cnpj, email, telefone, especialidade, matricula, senha, foto, status_tecnico) VALUES (?,?,?,?,?,?,?,?, 'Ativo')";
 
             conn.query(
               query,
