@@ -110,8 +110,8 @@ routes.post("/cadastro", async (req, res, next) => {
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
   }
-  if (!nome_empresa) {
-    return res.status(422).send({ message: "O nome da empresa é obrigatório!" });
+  if (!id_empresa) {
+    return res.status(422).send({ message: "O ID da empresa é obrigatório!" });
   }
   if (!usuario) {
     return res.status(422).send({ message: "O usuario é obrigatório!" });
