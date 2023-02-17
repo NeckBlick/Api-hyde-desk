@@ -211,48 +211,115 @@ routes.post("/criar", upload.single("anexo"), (req, res, next) => {
   });
 });
 
-// Atualizar status chamado
-routes.put("/atualizar/:id", (req, res, next) => {
-  const { id } = req.params;
-  const { status, tecnico_id } = req.body;
+// Aceitar chamado
+routes.put("/aceitar/:id_chamado", (req, res, next) => {
+  const { id_chamado } = req.params;
+  const { tecnico_id } = req.body;
 
-  if (!status) {
-    return res
-      .status(422)
-      .send({ message: "O campo status deve ser especifícado." });
+  if (!id_chamado) {
+    return res.status(422).send({ message: "O ID do chamado é obrigatório." });
+  }
+
+  if (!tecnico_id) {
+    return res.status(422).send({ message: "O ID do técnico é obrigatório." });
   }
 
   db.getConnection((error, conn) => {
     if (error) {
       return res.status(500).send({
-        message: "Não foi possível atualizar o status do chamado.",
+        message: "Não foi possível aceitar o chamado.",
         error: error,
       });
     }
 
-    let query = "";
-    if (tecnico_id) {
-      query = `UPDATE chamados SET status_chamado = '${status}', tecnico_id = ${tecnico_id} WHERE id_chamado = ${id}`;
-    } else {
-      query = `UPDATE chamados SET status_chamado = '${status}' WHERE id_chamado = ${id}`;
-    }
+    const query =
+      "UPDATE chamados SET status_chamado = 'andamento', tecnico_id = ? WHERE id_chamado = ?";
 
-    conn.query(query, (error, result, fields) => {
+    conn.query(query, [tecnico_id, id_chamado], (error, results, fields) => {
       conn.release();
       if (error) {
         return res.status(500).send({
-          message: "Não foi possível atualizar o status do chamado.",
+          message: "Não foi possível aceitar o chamado.",
+          error: error,
+        });
+      }
+
+      return res.status(200).send({ message: "Chamado aceito com sucesso." });
+    });
+  });
+});
+
+// Cancelar chamado
+routes.put("/cancelar/:id_chamado", (req, res, next) => {
+  const { id_chamado } = req.params;
+
+  if (!id_chamado) {
+    return res.status(422).send({ message: "O ID do chamado é obrigatório." });
+  }
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Não foi possível cancelar o chamado.",
+        error: error,
+      });
+    }
+
+    const query =
+      "UPDATE chamados SET status_chamado = 'cancelado', tecnico_id = NULL WHERE id_chamado = ?";
+
+    conn.query(query, [id_chamado], (error, results, fields) => {
+      conn.release();
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível cancelar o chamado.",
           error: error,
         });
       }
 
       return res
         .status(200)
-        .send({ message: "Status do chamado atualizado com sucesso." });
+        .send({ message: "Chamado cancelado com sucesso." });
     });
   });
 });
 
+// Técnico cancelar chamado
+routes.put("/tecnico/cancelar/:id_chamado", (req, res, next) => {
+  const { id_chamado } = req.params;
+
+  if (!id_chamado) {
+    return res.status(422).send({ message: "O ID do chamado é obrigatório." });
+  }
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Não foi possível cancelar o chamado.",
+        error: error,
+      });
+    }
+
+    const query =
+      "UPDATE chamados SET status_chamado = 'pendente', tecnico_id = NULL WHERE id_chamado = ?";
+
+    conn.query(query, [id_chamado], (error, results, fields) => {
+      conn.release();
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível cancelar o chamado.",
+          error: error,
+        });
+      }
+
+      return res
+        .status(200)
+        .send({ message: "Chamado cancelado com sucesso." });
+    });
+  });
+});
+
+// Concluir chamado
 routes.post("/concluir", upload.single("anexo"), (req, res, next) => {
   let anexo = null;
   const { descricao, chamado_id } = req.body;
@@ -299,8 +366,6 @@ routes.post("/concluir", upload.single("anexo"), (req, res, next) => {
           queryDois,
           [descricao, anexo, chamado_id],
           (error, result, fields) => {
-            conn.release();
-
             if (error) {
               return res.status(500).send({
                 message: "Não foi possível concluir o chamado.",
@@ -308,7 +373,22 @@ routes.post("/concluir", upload.single("anexo"), (req, res, next) => {
               });
             }
 
-            res.status(201).send({ message: "Chamado concluído com sucesso!" });
+            const queryTres =
+              "UPDATE chamados SET status_chamado = 'concluido' WHERE id_chamado = ?";
+
+            conn.query(queryTres, [chamado_id], (error, result, fields) => {
+              conn.release();
+              if (error) {
+                return res.status(500).send({
+                  message: "Não foi possível concluir o chamado.",
+                  error: error,
+                });
+              }
+
+              res
+                .status(201)
+                .send({ message: "Chamado concluído com sucesso!" });
+            });
           }
         );
       }
