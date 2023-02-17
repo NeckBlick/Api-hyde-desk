@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const login = require("../../middlewares/login");
 const routes = express.Router();
-
+const upload = require("../../middlewares/uploadImagens");
 // Buscar todas as empresas
 routes.get("/", (req, res, next) => {
   db.getConnection((error, conn) => {
@@ -55,7 +55,7 @@ routes.get("/:id", (req, res, next) => {
 });
 
 // Cadastro das empresas
-routes.post("/cadastro", (req, res, next) => {
+routes.post("/cadastro", upload.single('foto'),(req, res, next) => {
   const {
     nome,
     cnpj,
@@ -124,7 +124,7 @@ routes.post("/cadastro", (req, res, next) => {
             }
 
             let query =
-              "INSERT INTO empresas (nome, cnpj, cep, numero_endereco, telefone, email,foto, senha, status_empresa) VALUES (?, ?, ?, ?, ?, ?, ?, 'Ativo')";
+              "INSERT INTO empresas (nome, cnpj, cep, numero_endereco, telefone, email,foto, senha, status_empresa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Ativo')";
 
             conn.query(
               query,

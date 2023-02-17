@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const db = require("../../conexao");
 const jwt = require("jsonwebtoken");
 const login = require("../../middlewares/login");
+const fs = require("fs");
+const upload = require("../../middlewares/uploadImagens");
 const routes = express.Router();
 
 // Buscar todos os funcionários
@@ -49,7 +51,7 @@ routes.get("/:id", (req, res, next) => {
 });
 
 // Cadastro
-routes.post("/cadastro", async (req, res, next) => {
+routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
   const { nome, id_empresa, matricula, usuario, senha, confirmsenha } =
     req.body;
   const foto = req.file
@@ -192,8 +194,8 @@ routes.post("/login", (req, res) => {
 });
 
 // Editar um funcionário
-routes.put("/editar/:id", (req, res, next) => {
-  const { usuario, senha } = req.body;
+routes.put("/editar/:id", upload.single("foto") ,(req, res, next) => {
+  const {nome, usuario} = req.body;
   const id_funcionario = req.params.id;
   const foto = req.file;
 
@@ -201,23 +203,16 @@ routes.put("/editar/:id", (req, res, next) => {
     if (error) {
       return res.status(500).send({ error: error });
     }
-    const query_get = `SELECT usuario, foto FROM funcionarios WHERE id_funcionario = ${id_funcionario}`;
+    const query_get = `SELECT nome, usuario, foto FROM funcionarios WHERE id_funcionario = ${id_funcionario}`;
 
     conn.query(query_get, (error, result) => {
       // conn.release();
       if (error) {
         return res.status(500).send({ error: error });
       }
-
-      console.log(usuario);
-      if (result) {
-        return res.status(422).send({
-          message: "A nova senha não pode ser igual a antiga!",
-        });
-      }
       const foto_antiga = result[0].foto
       if (foto) {
-        const query = `UPDATE funcionarios SET usuario = '${usuario}', foto = '?' WHERE id_funcionario = ${id_funcionario}`;
+        const query = `UPDATE funcionarios SET nome = '${nome}', usuario = '${usuario}', foto = ? WHERE id_funcionario = ${id_funcionario}`;
 
         conn.query(query, [foto.path], (error, result) => {
           conn.release();
@@ -225,16 +220,18 @@ routes.put("/editar/:id", (req, res, next) => {
             return res.status(500).send({ error: error });
           }
           fs.unlinkSync(foto_antiga)
+          return res.status(200).send({ mensagem: "Dados alterados com sucesso." });
         });
       } else {
+        const query = `UPDATE funcionarios SET nome = '${nome}', usuario = '${usuario}', foto = ? WHERE id_funcionario = ${id_funcionario}`;
         conn.query(query, [result[0].foto], (error, result) => {
           conn.release();
           if (error) {
             return res.status(500).send({ error: error });
           }
+          return res.status(200).send({ mensagem: "Dados alterados com sucesso." });
         });
       }
-      return res.status(200).send({ mensagem: "Dados alterados com sucesso." });
     });
   });
 });
