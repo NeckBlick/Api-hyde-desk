@@ -52,6 +52,7 @@ routes.get("/:id", (req, res, next) => {
 routes.post("/cadastro", async (req, res, next) => {
   const { nome, id_empresa, matricula, usuario, senha, confirmsenha } =
     req.body;
+  const foto = req.file
 
   // Validação
   if (!nome) {
@@ -65,6 +66,9 @@ routes.post("/cadastro", async (req, res, next) => {
   }
   if (!matricula) {
     return res.status(422).send({ message: "A matricula é obrigatório!" });
+  }
+  if (!foto) {
+    return res.status(422).send({ message: "A foto é obrigatório!" });
   }
   if (!senha) {
     return res.status(422).send({ message: "A senha é obrigatório!" });
@@ -100,7 +104,8 @@ routes.post("/cadastro", async (req, res, next) => {
               return console.log(errorCrypt);
             }
 
-            let query = `INSERT INTO funcionarios (nome, usuario, matricula, senha, status_funcionario, empresa_id) SELECT '${nome}','${usuario}','${matricula}','${hashSenha}', 'Ativo', '${id_empresa}'`;
+            let query = `INSERT INTO funcionarios (nome, usuario, matricula, foto, senha, status_funcionario, empresa_id) SELECT '${nome}','${usuario}','${matricula}','${foto.path}','${hashSenha}', 'Ativo', '${id_empresa}'`;
+
 
             conn.query(query, (error, result, fields) => {
               conn.release();
