@@ -66,6 +66,7 @@ routes.post("/cadastro", (req, res, next) => {
     senha,
     confirmarsenha,
   } = req.body;
+  const foto = req.file
 
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
@@ -86,6 +87,9 @@ routes.post("/cadastro", (req, res, next) => {
   }
   if (!email) {
     return res.status(422).send({ message: "O email é obrigatório!" });
+  }
+  if (!foto) {
+    return res.status(422).send({ message: "A foto é obrigatório!" });
   }
   if (!senha) {
     return res.status(422).send({ message: "A senha é obrigatório!" });
@@ -120,11 +124,11 @@ routes.post("/cadastro", (req, res, next) => {
             }
 
             let query =
-              "INSERT INTO empresas (nome, cnpj, cep, numero_endereco, telefone, email, senha, status_empresa) VALUES (?, ?, ?, ?, ?, ?, ?, 'Ativo')";
+              "INSERT INTO empresas (nome, cnpj, cep, numero_endereco, telefone, email,foto, senha, status_empresa) VALUES (?, ?, ?, ?, ?, ?, ?, 'Ativo')";
 
             conn.query(
               query,
-              [nome, cnpj, cep, numero_endereco, telefone, email, hashSenha],
+              [nome, cnpj, cep, numero_endereco, telefone, email, foto.path , hashSenha],
 
               (error, result, field) => {
                 //conn.release() serve para liberar a conexão com o banco de dados para que as conexões abertas não travem as apis
