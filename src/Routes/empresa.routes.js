@@ -55,7 +55,7 @@ routes.get("/:id", (req, res, next) => {
 });
 
 // Cadastro das empresas
-routes.post("/cadastro", upload.single('foto'),(req, res, next) => {
+routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
   const {
     nome,
     cnpj,
