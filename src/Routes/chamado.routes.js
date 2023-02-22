@@ -248,4 +248,62 @@ routes.put("/atualizar/:id", (req, res, next) => {
   });
 });
 
+routes.post("/filtrar", (req, res) => {
+  const { status } = req.body
+  let query = `SELECT * FROM chamados AS c INNER JOIN funcionarios AS f ON f.id_funcionario = c.funcionario_id INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id `;
+  if(status == "pendente"){
+    query += `WHERE status_chamado = 'pendente'`;
+  }else
+      if(status == "aberto"){
+        query += `WHERE status_chamado = 'aberto'`;
+      }
+      else 
+        if(status == "em andamento"){
+          query += `WHERE status_chamado = 'em andamento'`;
+        }
+  db.getConnection((error, conn) => {
+    if (error)
+      return res
+        .status(500)
+        .send({
+          message: "Houve um erro, tente novamente mais tarde.",
+          erro: error,
+        });
+    
+    conn.query(query, (error, result) => {
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível encontrar o chamado.",
+          error: error,
+        });
+      }
+      return res.status(200).send(
+        result.map((result) => {
+          return {
+            id_chamado: result.id_chamado,
+            prioridade: result.prioridade,
+            patrimonio: result.patrimonio,
+            problema: result.problema,
+            anexo: result.anexo,
+            setor: result.setor,
+            descricao: result.descricao,
+            cod_verificacao: result.cod_verificacao,
+            status_chamado: result.status_chamado,
+            data: result.data,
+            tecnico_id: result.tecnico_id,
+            funcionario_id: result.funcionario_id,
+            empresa: {
+              empresa_id: result.id_empresa,
+              nome_empresa: result.nome_empresa,
+              cep: result.cep,
+              numero_endereco: result.numero_endereco,
+              telefone: result.telefone,
+            },
+          };
+        })
+      );
+    });
+  });
+});
+
 module.exports = routes;

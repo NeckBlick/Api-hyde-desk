@@ -236,4 +236,22 @@ routes.put("/editar/:id", upload.single("foto") ,(req, res, next) => {
   });
 });
 
+
+routes.post("/buscar", (req, res) => {
+  const { nome } = req.body
+  db.getConnection((error, conn) => {
+    if(error){
+      return res.status(500).send({message: "Houve um erro, tente novamente mais tarde."})
+    }
+    let query = "SELECT * FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id WHERE f.nome LIKE '?'"
+
+    conn.query(query, [nome] , (error, result) => {
+      if(error){
+        return res.status(500).send({message: "Não foi possivel encontrar o funcionário!"})
+      }
+      return res.status(201).send(result)
+    })
+  })
+})
+
 module.exports = routes;
