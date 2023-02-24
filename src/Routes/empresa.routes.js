@@ -6,29 +6,6 @@ const login = require("../../middlewares/login");
 const routes = express.Router();
 const upload = require("../../middlewares/uploadImagens");
 
-// Buscar todas as empresas
-routes.get("/", login, (req, res, next) => {
-  db.getConnection((error, conn) => {
-    if (error) {
-      return console.log(error);
-    }
-
-    let query = "SELECT * FROM empresas";
-
-    conn.query(query, (error, result, field) => {
-      conn.release();
-
-      if (error) {
-        res.status(500).send({
-          error: error,
-          response: null,
-        });
-      }
-
-      res.status(200).send(result);
-    });
-  });
-});
 
 // Buscar uma empresa
 routes.get("/:id", login, (req, res, next) => {
@@ -76,6 +53,12 @@ routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
   if (!cnpj) {
     return res.status(422).send({ message: "O cnpj é obrigatório!" });
   }
+  if (!email) {
+    return res.status(422).send({ message: "O email é obrigatório!" });
+  }
+  if (!telefone) {
+    return res.status(422).send({ message: "O telefone é obrigatório!" });
+  }
   if (!cep) {
     return res.status(422).send({ message: "O cep é obrigatório!" });
   }
@@ -83,12 +66,6 @@ routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
     return res
       .status(422)
       .send({ message: "O número do endereço é obrigatório!" });
-  }
-  if (!telefone) {
-    return res.status(422).send({ message: "O telefone é obrigatório!" });
-  }
-  if (!email) {
-    return res.status(422).send({ message: "O email é obrigatório!" });
   }
   if (!foto) {
     return res.status(422).send({ message: "A foto é obrigatório!" });
@@ -142,7 +119,7 @@ routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
                   });
                 }
                 res.status(201).send({
-                  message: "Empresa inserida com sucesso!",
+                  message: "Empresa cadastrada com sucesso!",
                   id_empresa: result.insertId,
                 });
               }

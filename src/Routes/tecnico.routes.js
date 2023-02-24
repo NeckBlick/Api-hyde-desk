@@ -12,6 +12,7 @@ const login = require("../../middlewares/login");
 routes.post("/cadastro", upload.single("foto"), async (req, res) => {
   const { nome, cpf, email, especialidade, telefone, senha, confirmsenha } =
     req.body;
+  const foto = req.file;
 
   // Validação
   if (!nome) {
@@ -29,15 +30,14 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
   if (!especialidade) {
     return res.status(422).send({ message: "A especialidade é obrigatório!" });
   }
+  if (!foto) {
+    return res.status(422).send({ message: "A foto é obrigatório!" });
+  }
   if (!senha) {
     return res.status(422).send({ message: "A senha é obrigatório!" });
   }
   if (senha != confirmsenha) {
     return res.status(422).send({ message: "As senhas são diferentes!" });
-  }
-  const foto = req.file;
-  if (!foto) {
-    return res.status(422).send({ message: "A foto é obrigatório!" });
   }
 
   // Matricula
@@ -169,24 +169,6 @@ routes.post("/login", (req, res) => {
   });
 });
 
-routes.get("/", login, (req, res, next) => {
-  db.getConnection((error, conn) => {
-    if (error) {
-      return res.status(500).send({ error: error });
-    }
-
-    let query = "SELECT * FROM tecnicos";
-    conn.query(query, (error, results, fields) => {
-      conn.release();
-      if (error) {
-        return res.status(500).send({ error: error });
-      }
-
-      return res.status(200).send(results);
-    });
-  });
-});
-
 // Chamar técnico em específico
 routes.get("/:id", login, (req, res, next) => {
   const id_tecnico = req.params.id;
@@ -205,39 +187,6 @@ routes.get("/:id", login, (req, res, next) => {
         });
       }
       return res.status(200).send(result[0]);
-    });
-  });
-});
-
-//Deletar técnico
-routes.delete("/deletar/:id", login, (req, res) => {
-  const { id } = req.params;
-  db.getConnection((error, conn) => {
-    if (error) {
-      return res.status(500).send({ error: error });
-    }
-    const query = "SELECT * FROM tecnico WHERE id_tecnico = ?";
-    conn.query(query, [id], (error, result, field) => {
-      if (error) {
-        return res.status(500).send({ error: error });
-      }
-      if (result.length != 0) {
-        const query = "DELETE FROM tecnico WHERE id_tecnico = ? ";
-        conn.query(query, [id], (error, result, field) => {
-          conn.release();
-          if (error) {
-            return res
-              .status(400)
-              .send({ message: "Não foi possivel deletar o técnico!" });
-          }
-          return res
-            .status(200)
-            .send({ message: "O usuário foi deletado com sucesso!" });
-        });
-      } else {
-        conn.release();
-        return res.status(400).send({ message: "O usuário não existe!" });
-      }
     });
   });
 });

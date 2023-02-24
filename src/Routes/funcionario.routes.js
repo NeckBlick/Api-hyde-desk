@@ -9,14 +9,37 @@ const routes = express.Router();
 
 // Buscar todos os funcionários
 routes.get("/", login, (req, res, next) => {
+  const filters = req.query
+ 
   db.getConnection((erro, conn) => {
     if (erro) {
       return res.status(500).status({
         erro: erro,
       });
     }
+    let query =
+    "SELECT * FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
+    let keysFilters = Object.keys(filters);
 
-    conn.query("SELECT * FROM funcionarios", (error, result, field) => {
+    if (keysFilters.length !== 0) {
+      query += " WHERE";
+
+      try {
+        keysFilters.forEach((key, index) => {
+          if (index !== keysFilters.length - 1) {
+            query += ` ${key} LIKE '${filters[key]}' AND`;
+          } else {
+            query += ` ${key} LIKE '${filters[key]}'`;
+          }
+        });
+      } catch (error) {
+        return res.status(500).send({
+          message: "Houve um erro, tente novamente mais tarde...",
+          erro: error,
+        });
+      }
+    }
+    conn.query(query, (error, result, field) => {
       conn.release();
       if (error) {
         return res.status(500).send({
@@ -60,14 +83,11 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
   }
-  if (!id_empresa) {
-    return res.status(422).send({ message: "O ID da empresa é obrigatório!" });
+  if (!matricula) {
+    return res.status(422).send({ message: "A matricula é obrigatório!" });
   }
   if (!usuario) {
     return res.status(422).send({ message: "O usuario é obrigatório!" });
-  }
-  if (!matricula) {
-    return res.status(422).send({ message: "A matricula é obrigatório!" });
   }
   if (!foto) {
     return res.status(422).send({ message: "A foto é obrigatório!" });
@@ -239,26 +259,5 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
   });
 });
 
-routes.post("/buscar", login, (req, res) => {
-  const { nome } = req.body;
-  db.getConnection((error, conn) => {
-    if (error) {
-      return res
-        .status(500)
-        .send({ message: "Houve um erro, tente novamente mais tarde." });
-    }
-    let query =
-      "SELECT * FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id WHERE f.nome LIKE '?'";
-
-    conn.query(query, [nome], (error, result) => {
-      if (error) {
-        return res
-          .status(500)
-          .send({ message: "Não foi possivel encontrar o funcionário!" });
-      }
-      return res.status(201).send(result);
-    });
-  });
-});
 
 module.exports = routes;
