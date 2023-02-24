@@ -1,11 +1,12 @@
 const express = require("express");
 const db = require("../../conexao");
 const upload = require("../../middlewares/uploadImagens");
+const login = require("../../middlewares/login");
 
 const routes = express.Router();
 
 // Buscar todos os chamados
-routes.get("/", (req, res, next) => {
+routes.get("/", login, (req, res, next) => {
   const filters = req.query;
 
   db.getConnection((error, conn) => {
@@ -80,7 +81,7 @@ routes.get("/", (req, res, next) => {
 });
 
 // Buscar um único chamado
-routes.get("/:id", (req, res, next) => {
+routes.get("/:id", login, (req, res, next) => {
   const id_chamado = req.params.id;
 
   db.getConnection((error, conn) => {
@@ -132,7 +133,7 @@ routes.get("/:id", (req, res, next) => {
 });
 
 // Criação dos chamados
-routes.post("/criar", upload.single("anexo"), (req, res, next) => {
+routes.post("/criar", login, upload.single("anexo"), (req, res, next) => {
   let anexo = null;
   const { prioridade, patrimonio, problema, descricao, setor, funcionario_id } =
     req.body;
@@ -144,18 +145,23 @@ routes.post("/criar", upload.single("anexo"), (req, res, next) => {
   if (!prioridade) {
     return res.status(422).send({ message: "A prioridade é obrigatório." });
   }
+
   if (!patrimonio) {
     return res.status(422).send({ message: "O patrimonio é obrigatório." });
   }
+
   if (!problema) {
     return res.status(422).send({ message: "A problema é obrigatório." });
   }
+
   if (!descricao) {
     return res.status(422).send({ message: "A descrição é obrigatório." });
   }
+
   if (!setor) {
     return res.status(422).send({ message: "O setor é obrigatório." });
   }
+
   if (!funcionario_id) {
     return res
       .status(422)
@@ -206,34 +212,199 @@ routes.post("/criar", upload.single("anexo"), (req, res, next) => {
   });
 });
 
-// Atualizar status chamado
-routes.put("/atualizar/:id", (req, res, next) => {
-  const { id } = req.params;
-  const { status, tecnico_id } = req.body;
+// Aceitar chamado
+routes.put("/aceitar/:id_chamado", login, (req, res, next) => {
+  const { id_chamado } = req.params;
+  const { tecnico_id } = req.body;
 
-  if (!status) {
-    return res
-      .status(422)
-      .send({ message: "O campo status deve ser especifícado." });
+  if (!id_chamado) {
+    return res.status(422).send({ message: "O ID do chamado é obrigatório." });
+  }
+
+  if (!tecnico_id) {
+    return res.status(422).send({ message: "O ID do técnico é obrigatório." });
   }
 
   db.getConnection((error, conn) => {
     if (error) {
       return res.status(500).send({
-        message: "Não foi possível atualizar o status do chamado.",
+        message: "Não foi possível aceitar o chamado.",
         error: error,
       });
     }
 
-    let query = "";
-    if (tecnico_id) {
-      query = `UPDATE chamados SET status_chamado = '${status}', tecnico_id = ${tecnico_id} WHERE id_chamado = ${id}`;
-    } else {
-      query = `UPDATE chamados SET status_chamado = '${status}' WHERE id_chamado = ${id}`;
+    const queryUm = "SELECT status_chamado FROM chamados WHERE id_chamado = ?";
+
+    conn.query(queryUm, [id_chamado], (error, result, fields) => {
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível aceitar o chamado.",
+          error: error,
+        });
+      }
+
+      if (result[0].status_chamado === "pendente") {
+        const queryDois =
+          "UPDATE chamados SET status_chamado = 'andamento', tecnico_id = ? WHERE id_chamado = ?";
+
+        conn.query(
+          queryDois,
+          [tecnico_id, id_chamado],
+          (error, results, fields) => {
+            conn.release();
+            if (error) {
+              return res.status(500).send({
+                message: "Não foi possível aceitar o chamado.",
+                error: error,
+              });
+            }
+
+            return res
+              .status(200)
+              .send({ message: "Chamado aceito com sucesso." });
+          }
+        );
+      } else {
+        conn.release();
+        return res.status(422).send({
+          message: "O chamado já está em andamento ou foi concluído.",
+        });
+      }
+    });
+  });
+});
+
+// Cancelar chamado
+routes.put("/cancelar/:id_chamado", login, (req, res, next) => {
+  const { id_chamado } = req.params;
+
+  if (!id_chamado) {
+    return res.status(422).send({ message: "O ID do chamado é obrigatório." });
+  }
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Não foi possível cancelar o chamado.",
+        error: error,
+      });
     }
 
-    conn.query(query, (error, result, fields) => {
-      conn.release();
+    const queryUm = "SELECT status_chamado FROM chamados WHERE id_chamado = ?";
+
+    conn.query(queryUm, [id_chamado], (error, result, fields) => {
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível cancelar o chamado.",
+          error: error,
+        });
+      }
+
+      if (result[0].status_chamado === "pendente") {
+        const queryDois =
+          "UPDATE chamados SET status_chamado = 'cancelado', tecnico_id = NULL WHERE id_chamado = ?";
+
+        conn.query(queryDois, [id_chamado], (error, results, fields) => {
+          conn.release();
+          if (error) {
+            return res.status(500).send({
+              message: "Não foi possível cancelar o chamado.",
+              error: error,
+            });
+          }
+
+          return res
+            .status(200)
+            .send({ message: "Chamado cancelado com sucesso." });
+        });
+      } else {
+        conn.release();
+        return res.status(422).send({
+          message: "O chamado já está em andamento ou foi concluído.",
+        });
+      }
+    });
+  });
+});
+
+// Suspender chamado
+routes.put("/suspender/:id_chamado", login, (req, res, next) => {
+  const { id_chamado } = req.params;
+
+  if (!id_chamado) {
+    return res.status(422).send({ message: "O ID do chamado é obrigatório." });
+  }
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Não foi possível suspender o chamado.",
+        error: error,
+      });
+    }
+
+    const queryUm = "SELECT status_chamado FROM chamados WHERE id_chamado = ?";
+
+    conn.query(queryUm, [id_chamado], (error, result, fields) => {
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível suspender o chamado.",
+          error: error,
+        });
+      }
+
+      if (result[0].status_chamado === "andamento") {
+        const queryDois =
+          "UPDATE chamados SET status_chamado = 'pendente', tecnico_id = NULL WHERE id_chamado = ?";
+
+        conn.query(queryDois, [id_chamado], (error, results, fields) => {
+          conn.release();
+          if (error) {
+            return res.status(500).send({
+              message: "Não foi possível suspender o chamado.",
+              error: error,
+            });
+          }
+
+          return res
+            .status(200)
+            .send({ message: "Chamado suspenso com sucesso." });
+        });
+      } else {
+        conn.release();
+        return res.status(422).send({
+          message: "O chamado está pendente ou foi concluído.",
+        });
+      }
+    });
+  });
+});
+
+// Concluir chamado
+routes.put(
+  "/concluir/:id_chamado",
+  login,
+  upload.single("anexo"),
+  (req, res, next) => {
+    let anexo = null;
+    const { id_chamado } = req.params;
+    const { descricao } = req.body;
+
+    if (req.file) {
+      anexo = req.file.path;
+    }
+
+    if (!descricao) {
+      return res.status(422).send({ message: "A descrição é obrigatório." });
+    }
+
+    if (!id_chamado) {
+      return res
+        .status(422)
+        .send({ message: "O ID do chamado é obrigatório." });
+    }
+
+    db.getConnection((error, conn) => {
       if (error) {
         return res.status(500).send({
           message: "Não foi possível atualizar o status do chamado.",
@@ -241,68 +412,107 @@ routes.put("/atualizar/:id", (req, res, next) => {
         });
       }
 
-      return res
-        .status(200)
-        .send({ message: "Status do chamado atualizado com sucesso." });
-    });
-  });
-});
+      const queryUm = "SELECT * FROM conclusoes WHERE chamado_id = ?";
 
-routes.post("/filtrar", (req, res) => {
-  const { status } = req.body
-  let query = `SELECT * FROM chamados AS c INNER JOIN funcionarios AS f ON f.id_funcionario = c.funcionario_id INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id `;
-  if(status == "pendente"){
-    query += `WHERE status_chamado = 'pendente'`;
-  }else
-      if(status == "aberto"){
-        query += `WHERE status_chamado = 'aberto'`;
-      }
-      else 
-        if(status == "em andamento"){
-          query += `WHERE status_chamado = 'em andamento'`;
+      conn.query(queryUm, [id_chamado], (error, result, fields) => {
+        if (error) {
+          return res.status(500).send({
+            message: "Não foi possível concluir o chamado.",
+            error: error,
+          });
         }
-  db.getConnection((error, conn) => {
-    if (error)
-      return res
-        .status(500)
-        .send({
-          message: "Houve um erro, tente novamente mais tarde.",
-          erro: error,
-        });
-    
-    conn.query(query, (error, result) => {
-      if (error) {
-        return res.status(500).send({
-          message: "Não foi possível encontrar o chamado.",
-          error: error,
-        });
-      }
-      return res.status(200).send(
-        result.map((result) => {
-          return {
-            id_chamado: result.id_chamado,
-            prioridade: result.prioridade,
-            patrimonio: result.patrimonio,
-            problema: result.problema,
-            anexo: result.anexo,
-            setor: result.setor,
-            descricao: result.descricao,
-            cod_verificacao: result.cod_verificacao,
-            status_chamado: result.status_chamado,
-            data: result.data,
-            tecnico_id: result.tecnico_id,
-            funcionario_id: result.funcionario_id,
-            empresa: {
-              empresa_id: result.id_empresa,
-              nome_empresa: result.nome_empresa,
-              cep: result.cep,
-              numero_endereco: result.numero_endereco,
-              telefone: result.telefone,
-            },
-          };
-        })
-      );
+
+        if (result.length !== 0) {
+          return res
+            .status(422)
+            .send({ message: "Este chamado já está concluído." });
+        } else {
+          const queryDois =
+            "INSERT INTO conclusoes (descricao, data_termino, anexo, chamado_id) VALUES (?, NOW(), ?, ?)";
+
+          conn.query(
+            queryDois,
+            [descricao, anexo, id_chamado],
+            (error, result, fields) => {
+              if (error) {
+                return res.status(500).send({
+                  message: "Não foi possível concluir o chamado.",
+                  error: error,
+                });
+              }
+
+              const queryTres =
+                "UPDATE chamados SET status_chamado = 'concluido' WHERE id_chamado = ?";
+
+              conn.query(queryTres, [id_chamado], (error, result, fields) => {
+                conn.release();
+                if (error) {
+                  return res.status(500).send({
+                    message: "Não foi possível concluir o chamado.",
+                    error: error,
+                  });
+                }
+
+                return res
+                  .status(201)
+                  .send({ message: "Chamado concluído com sucesso!" });
+              });
+            }
+          );
+        }
+      });
     });
+  }
+);
+
+// Avaliar chamado
+routes.put("/avaliar/:id_chamado", login, (req, res, next) => {
+  const { id_chamado } = req.params;
+  const { num_avaliacao, desc_avaliacao } = req.body;
+
+  if (!num_avaliacao) {
+    return res
+      .status(422)
+      .send({ message: "O número da avaliação é obrigatório." });
+  }
+
+  if (!id_chamado) {
+    return res.status(422).send({ message: "O ID do chamado é obrigatório." });
+  }
+
+  if (Number(num_avaliacao) <= 2 && !desc_avaliacao) {
+    return res.status(422).send({
+      message: "A descrição é obrigatória pois a nota está abaixo de 3.",
+    });
+  }
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Não foi possível avaliar o chamado.",
+        error: error,
+      });
+    }
+
+    const query =
+      "UPDATE conclusoes SET num_avaliacao = ?, desc_avaliacao = ? WHERE chamado_id = ?";
+
+    conn.query(
+      query,
+      [num_avaliacao, !desc_avaliacao ? null : desc_avaliacao, id_chamado],
+      (error, result, fields) => {
+        if (error) {
+          return res.status(500).send({
+            message: "Não foi possível avaliar o chamado.",
+            error: error,
+          });
+        }
+
+        return res
+          .status(200)
+          .send({ message: "Chamado avaliado com sucesso!" });
+      }
+    );
   });
 });
 

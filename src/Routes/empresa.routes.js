@@ -5,8 +5,9 @@ const jwt = require("jsonwebtoken");
 const login = require("../../middlewares/login");
 const routes = express.Router();
 const upload = require("../../middlewares/uploadImagens");
+
 // Buscar todas as empresas
-routes.get("/", (req, res, next) => {
+routes.get("/", login, (req, res, next) => {
   db.getConnection((error, conn) => {
     if (error) {
       return console.log(error);
@@ -23,13 +24,14 @@ routes.get("/", (req, res, next) => {
           response: null,
         });
       }
+
       res.status(200).send(result);
     });
   });
 });
 
 // Buscar uma empresa
-routes.get("/:id", (req, res, next) => {
+routes.get("/:id", login, (req, res, next) => {
   const empresa = req.params.id;
 
   let query = `SELECT * FROM empresas WHERE id_empresa='${empresa}'`;
@@ -214,7 +216,7 @@ routes.post("/login", (req, res) => {
 });
 
 // atualizar empresa
-routes.put("/editar/:id", (req, res, next) => {
+routes.put("/editar/:id", login, (req, res, next) => {
   const { nome, senha, cep, numero_endereco, telefone, email } = req.body;
   const id_empresa = req.params.id;
 

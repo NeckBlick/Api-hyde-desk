@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
-app.use("/uploads", express.static("uploads"))
+app.use("/uploads", express.static("uploads"));
 app.use(cors());
 app.use(express.json());
 
@@ -24,14 +24,16 @@ app.use((req, res, next) => {
 
 app.get("/", (req, res) => {
   return res.status(200).send({
-    message: "Seja bem vindo a API do"
-  })
-})
+    message: "Seja bem vindo a API do Hyde Desk",
+  });
+});
+
 // Rotas
 const tecnicoRoutes = require("./src/Routes/tecnico.routes");
 const chamadoRoutes = require("./src/Routes/chamado.routes");
 const empresaRoutes = require("./src/Routes/empresa.routes");
 const funcionarioRoutes = require("./src/Routes/funcionario.routes");
+const conclusaoRoutes = require("./src/Routes/conclusao.routes");
 const emailRoutes = require("./src/Routes/email.routes");
 
 // Definição das rotas
@@ -40,6 +42,6 @@ app.use("/chamados", chamadoRoutes);
 app.use("/empresas", empresaRoutes);
 app.use("/funcionarios", funcionarioRoutes);
 app.use("/email", emailRoutes);
-
+app.use("/conclusoes", conclusaoRoutes);
 
 module.exports = app;

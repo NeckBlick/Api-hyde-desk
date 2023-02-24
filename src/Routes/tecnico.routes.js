@@ -169,7 +169,7 @@ routes.post("/login", (req, res) => {
   });
 });
 
-routes.get("/", (req, res, next) => {
+routes.get("/", login, (req, res, next) => {
   db.getConnection((error, conn) => {
     if (error) {
       return res.status(500).send({ error: error });
@@ -188,7 +188,7 @@ routes.get("/", (req, res, next) => {
 });
 
 // Chamar técnico em específico
-routes.get("/:id", (req, res, next) => {
+routes.get("/:id", login, (req, res, next) => {
   const id_tecnico = req.params.id;
   const query = `SELECT * FROM tecnicos WHERE id_tecnico = ${id_tecnico}`;
 
@@ -210,7 +210,7 @@ routes.get("/:id", (req, res, next) => {
 });
 
 //Deletar técnico
-routes.delete("/deletar/:id", (req, res) => {
+routes.delete("/deletar/:id", login, (req, res) => {
   const { id } = req.params;
   db.getConnection((error, conn) => {
     if (error) {
@@ -243,7 +243,7 @@ routes.delete("/deletar/:id", (req, res) => {
 });
 
 // Editar um Tecnico
-routes.put("/editar/:id", upload.single("foto"), (req, res, next) => {
+routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
   const { nome, email, especialidade, telefone } = req.body;
   const id_tecnico = req.params.id;
   

@@ -8,7 +8,7 @@ const upload = require("../../middlewares/uploadImagens");
 const routes = express.Router();
 
 // Buscar todos os funcionários
-routes.get("/", (req, res, next) => {
+routes.get("/", login, (req, res, next) => {
   db.getConnection((erro, conn) => {
     if (erro) {
       return res.status(500).status({
@@ -30,7 +30,7 @@ routes.get("/", (req, res, next) => {
 });
 
 // Buscar um funcionário
-routes.get("/:id", (req, res, next) => {
+routes.get("/:id", login, (req, res, next) => {
   const id_funcionario = req.params.id;
   const query = `SELECT * FROM funcionarios WHERE id_funcionario = ${id_funcionario}`;
 
@@ -51,10 +51,10 @@ routes.get("/:id", (req, res, next) => {
 });
 
 // Cadastro
-routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
+routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
   const { nome, id_empresa, matricula, usuario, senha, confirmsenha } =
     req.body;
-  const foto = req.file
+  const foto = req.file;
 
   // Validação
   if (!nome) {
@@ -107,7 +107,6 @@ routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
             }
 
             let query = `INSERT INTO funcionarios (nome, usuario, matricula, foto, senha, status_funcionario, empresa_id) SELECT '${nome}','${usuario}','${matricula}','${foto.path}','${hashSenha}', 'Ativo', '${id_empresa}'`;
-
 
             conn.query(query, (error, result, fields) => {
               conn.release();
@@ -194,8 +193,8 @@ routes.post("/login", (req, res) => {
 });
 
 // Editar um funcionário
-routes.put("/editar/:id", upload.single("foto") ,(req, res, next) => {
-  const {nome, usuario} = req.body;
+routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
+  const { nome, usuario } = req.body;
   const id_funcionario = req.params.id;
   const foto = req.file;
 
@@ -210,7 +209,7 @@ routes.put("/editar/:id", upload.single("foto") ,(req, res, next) => {
       if (error) {
         return res.status(500).send({ error: error });
       }
-      const foto_antiga = result[0].foto
+      const foto_antiga = result[0].foto;
       if (foto) {
         const query = `UPDATE funcionarios SET nome = '${nome}', usuario = '${usuario}', foto = ? WHERE id_funcionario = ${id_funcionario}`;
 
@@ -219,8 +218,10 @@ routes.put("/editar/:id", upload.single("foto") ,(req, res, next) => {
           if (error) {
             return res.status(500).send({ error: error });
           }
-          fs.unlinkSync(foto_antiga)
-          return res.status(200).send({ mensagem: "Dados alterados com sucesso." });
+          fs.unlinkSync(foto_antiga);
+          return res
+            .status(200)
+            .send({ mensagem: "Dados alterados com sucesso." });
         });
       } else {
         const query = `UPDATE funcionarios SET nome = '${nome}', usuario = '${usuario}', foto = ? WHERE id_funcionario = ${id_funcionario}`;
@@ -229,29 +230,35 @@ routes.put("/editar/:id", upload.single("foto") ,(req, res, next) => {
           if (error) {
             return res.status(500).send({ error: error });
           }
-          return res.status(200).send({ mensagem: "Dados alterados com sucesso." });
+          return res
+            .status(200)
+            .send({ mensagem: "Dados alterados com sucesso." });
         });
       }
     });
   });
 });
 
-
-routes.post("/buscar", (req, res) => {
-  const { nome } = req.body
+routes.post("/buscar", login, (req, res) => {
+  const { nome } = req.body;
   db.getConnection((error, conn) => {
-    if(error){
-      return res.status(500).send({message: "Houve um erro, tente novamente mais tarde."})
+    if (error) {
+      return res
+        .status(500)
+        .send({ message: "Houve um erro, tente novamente mais tarde." });
     }
-    let query = "SELECT * FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id WHERE f.nome LIKE '?'"
+    let query =
+      "SELECT * FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id WHERE f.nome LIKE '?'";
 
-    conn.query(query, [nome] , (error, result) => {
-      if(error){
-        return res.status(500).send({message: "Não foi possivel encontrar o funcionário!"})
+    conn.query(query, [nome], (error, result) => {
+      if (error) {
+        return res
+          .status(500)
+          .send({ message: "Não foi possivel encontrar o funcionário!" });
       }
-      return res.status(201).send(result)
-    })
-  })
-})
+      return res.status(201).send(result);
+    });
+  });
+});
 
 module.exports = routes;
