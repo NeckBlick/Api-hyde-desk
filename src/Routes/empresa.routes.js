@@ -4,9 +4,10 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const login = require("../../middlewares/login");
 const routes = express.Router();
+const upload = require("../../middlewares/uploadImagens");
 
 // Buscar todas as empresas
-routes.get("/", (req, res, next) => {
+routes.get("/", login, (req, res, next) => {
   db.getConnection((error, conn) => {
     if (error) {
       return console.log(error);
@@ -23,13 +24,14 @@ routes.get("/", (req, res, next) => {
           response: null,
         });
       }
+
       res.status(200).send(result);
     });
   });
 });
 
 // Buscar uma empresa
-routes.get("/:id", (req, res, next) => {
+routes.get("/:id", login, (req, res, next) => {
   const empresa = req.params.id;
 
   let query = `SELECT * FROM empresas WHERE id_empresa='${empresa}'`;
@@ -55,7 +57,7 @@ routes.get("/:id", (req, res, next) => {
 });
 
 // Cadastro das empresas
-routes.post("/cadastro", (req, res, next) => {
+routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
   const {
     nome,
     cnpj,
@@ -66,6 +68,7 @@ routes.post("/cadastro", (req, res, next) => {
     senha,
     confirmarsenha,
   } = req.body;
+  const foto = req.file
 
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
@@ -86,6 +89,9 @@ routes.post("/cadastro", (req, res, next) => {
   }
   if (!email) {
     return res.status(422).send({ message: "O email é obrigatório!" });
+  }
+  if (!foto) {
+    return res.status(422).send({ message: "A foto é obrigatório!" });
   }
   if (!senha) {
     return res.status(422).send({ message: "A senha é obrigatório!" });
@@ -120,11 +126,11 @@ routes.post("/cadastro", (req, res, next) => {
             }
 
             let query =
-              "INSERT INTO empresas (nome, cnpj, cep, numero_endereco, telefone, email, senha, status_empresa) VALUES (?, ?, ?, ?, ?, ?, ?, 'Ativo')";
+              "INSERT INTO empresas (nome, cnpj, cep, numero_endereco, telefone, email,foto, senha, status_empresa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Ativo')";
 
             conn.query(
               query,
-              [nome, cnpj, cep, numero_endereco, telefone, email, hashSenha],
+              [nome, cnpj, cep, numero_endereco, telefone, email, foto.path , hashSenha],
 
               (error, result, field) => {
                 //conn.release() serve para liberar a conexão com o banco de dados para que as conexões abertas não travem as apis
@@ -210,7 +216,7 @@ routes.post("/login", (req, res) => {
 });
 
 // atualizar empresa
-routes.put("/editar/:id", (req, res, next) => {
+routes.put("/editar/:id", login, (req, res, next) => {
   const { nome, senha, cep, numero_endereco, telefone, email } = req.body;
   const id_empresa = req.params.id;
 

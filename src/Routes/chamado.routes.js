@@ -1,11 +1,12 @@
 const express = require("express");
 const db = require("../../conexao");
 const upload = require("../../middlewares/uploadImagens");
+const login = require("../../middlewares/login");
 
 const routes = express.Router();
 
 // Buscar todos os chamados
-routes.get("/", (req, res, next) => {
+routes.get("/", login, (req, res, next) => {
   const filters = req.query;
 
   db.getConnection((error, conn) => {
@@ -80,7 +81,7 @@ routes.get("/", (req, res, next) => {
 });
 
 // Buscar um único chamado
-routes.get("/:id", (req, res, next) => {
+routes.get("/:id", login, (req, res, next) => {
   const id_chamado = req.params.id;
 
   db.getConnection((error, conn) => {
@@ -132,7 +133,7 @@ routes.get("/:id", (req, res, next) => {
 });
 
 // Criação dos chamados
-routes.post("/criar", upload.single("anexo"), (req, res, next) => {
+routes.post("/criar", login, upload.single("anexo"), (req, res, next) => {
   let anexo = null;
   const { prioridade, patrimonio, problema, descricao, setor, funcionario_id } =
     req.body;
@@ -212,7 +213,7 @@ routes.post("/criar", upload.single("anexo"), (req, res, next) => {
 });
 
 // Aceitar chamado
-routes.put("/aceitar/:id_chamado", (req, res, next) => {
+routes.put("/aceitar/:id_chamado", login, (req, res, next) => {
   const { id_chamado } = req.params;
   const { tecnico_id } = req.body;
 
@@ -274,7 +275,7 @@ routes.put("/aceitar/:id_chamado", (req, res, next) => {
 });
 
 // Cancelar chamado
-routes.put("/cancelar/:id_chamado", (req, res, next) => {
+routes.put("/cancelar/:id_chamado", login, (req, res, next) => {
   const { id_chamado } = req.params;
 
   if (!id_chamado) {
@@ -327,7 +328,7 @@ routes.put("/cancelar/:id_chamado", (req, res, next) => {
 });
 
 // Suspender chamado
-routes.put("/suspender/:id_chamado", (req, res, next) => {
+routes.put("/suspender/:id_chamado", login, (req, res, next) => {
   const { id_chamado } = req.params;
 
   if (!id_chamado) {
@@ -382,6 +383,7 @@ routes.put("/suspender/:id_chamado", (req, res, next) => {
 // Concluir chamado
 routes.put(
   "/concluir/:id_chamado",
+  login,
   upload.single("anexo"),
   (req, res, next) => {
     let anexo = null;
@@ -464,7 +466,7 @@ routes.put(
 );
 
 // Avaliar chamado
-routes.put("/avaliar/:id_chamado", (req, res, next) => {
+routes.put("/avaliar/:id_chamado", login, (req, res, next) => {
   const { id_chamado } = req.params;
   const { num_avaliacao, desc_avaliacao } = req.body;
 

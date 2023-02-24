@@ -1,11 +1,11 @@
 const express = require("express");
 const db = require("../../conexao");
-const upload = require("../../middlewares/uploadImagens");
+const login = require("../../middlewares/login");
 
 const routes = express.Router();
 
 // Buscar todas conclusões
-routes.get("/", (req, res, next) => {
+routes.get("/", login, (req, res, next) => {
   const filters = req.query;
 
   db.getConnection((error, conn) => {
@@ -39,7 +39,7 @@ routes.get("/", (req, res, next) => {
       }
     }
 
-    console.log(query)
+    console.log(query);
 
     conn.query(query, (error, results, fields) => {
       if (error) {
@@ -55,7 +55,7 @@ routes.get("/", (req, res, next) => {
 });
 
 // Buscar conclusões pelo ID do chamado
-routes.get("/:id_conclusao", (req, res, next) => {
+routes.get("/:id_conclusao", login, (req, res, next) => {
   const { id_conclusao } = req.params;
 
   db.getConnection((error, conn) => {

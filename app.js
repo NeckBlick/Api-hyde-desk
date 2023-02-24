@@ -34,12 +34,14 @@ const chamadoRoutes = require("./src/Routes/chamado.routes");
 const empresaRoutes = require("./src/Routes/empresa.routes");
 const funcionarioRoutes = require("./src/Routes/funcionario.routes");
 const conclusaoRoutes = require("./src/Routes/conclusao.routes");
+const emailRoutes = require("./src/Routes/email.routes");
 
 // Definição das rotas
 app.use("/tecnicos", tecnicoRoutes);
 app.use("/chamados", chamadoRoutes);
 app.use("/empresas", empresaRoutes);
 app.use("/funcionarios", funcionarioRoutes);
+app.use("/email", emailRoutes);
 app.use("/conclusoes", conclusaoRoutes);
 
 module.exports = app;

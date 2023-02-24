@@ -52,5 +52,5 @@ jobs:
         with:
           app-name: 'HDTeste'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D03E5317CFA648A89A6240D9ED4E1756 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F774D291C9EE407B8A56193C5673D55D }}
           package: .
