@@ -73,7 +73,7 @@ routes.get("/", login, (req, res, next) => {
           nome_funcionario: result.nome_funcionario,
           empresa_id: result.id_empresa,
           nome_empresa: result.nome_empresa,
-          cep: result.cep,`
+          cep: result.cep,
           numero_endereco: result.numero_endereco,
           telefone: result.telefone,
         };
