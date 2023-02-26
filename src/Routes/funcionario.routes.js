@@ -21,7 +21,7 @@ routes.get("/", login, (req, res, next) => {
       "SELECT f.id_funcionario,f.nome,f.matricula,f.usuario,f.status_funcionario FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
     let keysFilters = Object.keys(filters);
     if (keysFilters.includes("nome")) {
-      query += ` AND e.nome = '${filters["nome"]}'`;
+      query += ` AND f.nome = '${filters["nome"]}'`;
       keysFilters = keysFilters.filter((item) => item !== "nome");
     }
     if (keysFilters.length !== 0) {
