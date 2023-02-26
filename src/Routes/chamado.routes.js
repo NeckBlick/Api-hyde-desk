@@ -66,13 +66,12 @@ routes.get("/", login, (req, res, next) => {
             data: result.data,
             tecnico_id: result.tecnico_id,
             funcionario_id: result.funcionario_id,
-            empresa: {
               empresa_id: result.id_empresa,
               nome_empresa: result.nome_empresa,
               cep: result.cep,
               numero_endereco: result.numero_endereco,
               telefone: result.telefone,
-            },
+            
           };
         })
       );
