@@ -248,7 +248,7 @@ routes.put("/aceitar/:id_chamado", login, (req, res, next) => {
 
       if (result[0].status_chamado === "pendente") {
         const queryDois =
-          "UPDATE chamados SET status_chamado = 'Em andamento', tecnico_id = ? WHERE id_chamado = ?";
+          "UPDATE chamados SET status_chamado = 'andamento', tecnico_id = ? WHERE id_chamado = ?";
 
         conn.query(
           queryDois,
