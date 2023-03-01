@@ -126,10 +126,13 @@ routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
                     tipo: cadastro
                   };
                   const response = await axios.post("https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o", jsonData);
-                  res.status(201).send({
-                    message: "Empresa cadastrada com sucesso!",
-                    id_empresa: result.insertId,
-                  });
+                  if(response.status == 200){
+
+                    return res.status(201).send({
+                      message: "Empresa cadastrada com sucesso!",
+                      id_empresa: result.insertId,
+                    });
+                  }
                 } catch (error) {
                   return res.status(401).send({menssage: error})
                 }
