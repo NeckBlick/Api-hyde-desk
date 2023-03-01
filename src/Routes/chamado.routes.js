@@ -209,21 +209,7 @@ routes.post("/criar", login, upload.single("anexo"), (req, res, next) => {
             erro: error,
           });
         }
-        try {
-          var jsonData = {
-            toemail: email,
-            nome: nome,
-            tipo: "chamado"
-          };
-          const response = await axios.post("https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o", jsonData);
-          if(response.status == 200){
             return res.status(200).send({ message: "Chamado aberto com sucesso." });
-          }
-        } catch (error) {
-          return res.status(401).send({menssage: error})
-        }
-
-        
       }
     );
   });
