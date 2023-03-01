@@ -137,7 +137,6 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
                   erro: error,
                 });
               }
-
               return res.status(201).send({
                 message: "Funcionário cadastrado com sucesso!",
                 id_funcionario: result.insertId,

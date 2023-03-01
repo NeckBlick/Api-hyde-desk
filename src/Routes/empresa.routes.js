@@ -1,4 +1,5 @@
 const express = require("express");
+const axios = require("axios");
 const db = require("../../conexao");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -109,7 +110,7 @@ routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
               query,
               [nome, cnpj, cep, numero_endereco, telefone, email, foto.path , hashSenha],
 
-              (error, result, field) => {
+            async  (error, result, field) => {
                 //conn.release() serve para liberar a conexão com o banco de dados para que as conexões abertas não travem as apis
                 conn.release();
                 if (error) {
@@ -118,10 +119,21 @@ routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
                     response: null,
                   });
                 }
-                res.status(201).send({
-                  message: "Empresa cadastrada com sucesso!",
-                  id_empresa: result.insertId,
-                });
+                try {
+                  var jsonData = {
+                    toemail: email,
+                    nome: nome,
+                    tipo: cadastro
+                  };
+                  const response = await axios.post("https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o", jsonData);
+                  res.status(201).send({
+                    message: "Empresa cadastrada com sucesso!",
+                    id_empresa: result.insertId,
+                  });
+                } catch (error) {
+                  return res.status(401).send({menssage: error})
+                }
+                
               }
             );
           });

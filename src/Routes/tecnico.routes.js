@@ -3,6 +3,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
+const axios = require("axios");
 const routes = express.Router();
 const db = require("../../conexao");
 const upload = require("../../middlewares/uploadImagens");
@@ -91,7 +92,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
                 hashSenha,
                 foto.path,
               ],
-              (error, result, fields) => {
+             async (error, result, fields) => {
                 conn.release();
                 if (error) {
                   console.log(error);
@@ -100,11 +101,20 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
                     erro: error,
                   });
                 }
-
-                return res.status(201).send({
-                  message: "Técnico cadastrado com sucesso!",
-                  id_tecnico: result.insertId,
-                });
+                try {
+                  var jsonData = {
+                    toemail: email,
+                    nome: nome,
+                    tipo: cadastro
+                  };
+                  const response = await axios.post("https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o", jsonData);
+                  return res.status(201).send({
+                    message: "Técnico cadastrado com sucesso!",
+                    id_tecnico: result.insertId,
+                  });
+                } catch (error) {
+                  return res.status(401).send({menssage: error})
+                }
               }
             );
           });
