@@ -19,9 +19,14 @@ routes.get("/", login, (req, res, next) => {
     }
 
     let query =
-      "SELECT *, e.nome AS nome_empresa FROM chamados AS c INNER JOIN funcionarios AS f ON f.id_funcionario = c.funcionario_id INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
+      "SELECT *, e.nome AS nome_empresa, f.nome AS nome_funcionario FROM chamados AS c INNER JOIN funcionarios AS f ON f.id_funcionario = c.funcionario_id INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
 
     let keysFilters = Object.keys(filters);
+
+    if (keysFilters.includes("nome_empresa")) {
+      query += ` AND e.nome = '${filters["nome_empresa"]}'`;
+      keysFilters = keysFilters.filter((item) => item !== "nome_empresa");
+    }
 
     if (keysFilters.length !== 0) {
       query += " WHERE";
@@ -46,37 +51,36 @@ routes.get("/", login, (req, res, next) => {
       conn.release();
 
       if (error) {
-        res.status(500).send({
+        return res.status(500).send({
           error: error,
           response: null,
         });
       }
 
-      res.status(200).send(
-        results.map((result) => {
-          return {
-            id_chamado: result.id_chamado,
-            prioridade: result.prioridade,
-            patrimonio: result.patrimonio,
-            problema: result.problema,
-            anexo: result.anexo,
-            setor: result.setor,
-            descricao: result.descricao,
-            cod_verificacao: result.cod_verificacao,
-            status_chamado: result.status_chamado,
-            data: result.data,
-            tecnico_id: result.tecnico_id,
-            funcionario_id: result.funcionario_id,
-            empresa: {
-              empresa_id: result.id_empresa,
-              nome_empresa: result.nome_empresa,
-              cep: result.cep,
-              numero_endereco: result.numero_endereco,
-              telefone: result.telefone,
-            },
-          };
-        })
-      );
+      const responseFormatada = results.map((result) => {
+        return {
+          id_chamado: result.id_chamado,
+          prioridade: result.prioridade,
+          patrimonio: result.patrimonio,
+          problema: result.problema,
+          anexo: result.anexo,
+          setor: result.setor,
+          descricao: result.descricao,
+          cod_verificacao: result.cod_verificacao,
+          status_chamado: result.status_chamado,
+          data: result.data,
+          tecnico_id: result.tecnico_id,
+          funcionario_id: result.funcionario_id,
+          nome_funcionario: result.nome_funcionario,
+          empresa_id: result.id_empresa,
+          nome_empresa: result.nome_empresa,
+          cep: result.cep,
+          numero_endereco: result.numero_endereco,
+          telefone: result.telefone,
+        };
+      });
+
+      res.status(200).send(responseFormatada);
     });
   });
 });
@@ -119,13 +123,12 @@ routes.get("/:id", login, (req, res, next) => {
             data: result.data,
             tecnico_id: result.tecnico_id,
             funcionario_id: result.funcionario_id,
-            empresa: {
-              empresa_id: result.id_empresa,
-              nome_empresa: result.nome_empresa,
-              cep: result.cep,
-              numero_endereco: result.numero_endereco,
-              telefone: result.telefone,
-            },
+            nome_funcionario: result.nome_funcionario,
+            empresa_id: result.id_empresa,
+            nome_empresa: result.nome_empresa,
+            cep: result.cep,
+            numero_endereco: result.numero_endereco,
+            telefone: result.telefone,
           };
         })
       );
@@ -257,7 +260,7 @@ routes.put("/aceitar/:id_chamado", login, (req, res, next) => {
 
       if (result[0].status_chamado === "pendente") {
         const queryDois =
-          "UPDATE chamados SET status_chamado = 'Em andamento', tecnico_id = ? WHERE id_chamado = ?";
+          "UPDATE chamados SET status_chamado = 'andamento', tecnico_id = ? WHERE id_chamado = ?";
 
         conn.query(
           queryDois,
@@ -289,7 +292,6 @@ routes.put("/aceitar/:id_chamado", login, (req, res, next) => {
 // Cancelar chamado
 routes.put("/cancelar/:id_chamado", login, (req, res, next) => {
   const { id_chamado } = req.params;
-
 
   db.getConnection((error, conn) => {
     if (error) {
@@ -441,7 +443,7 @@ routes.put(
 
           conn.query(
             queryDois,
-            [descricao,anexo, id_chamado],
+            [descricao, anexo, id_chamado],
             (error, result, fields) => {
               if (error) {
                 return res.status(500).send({

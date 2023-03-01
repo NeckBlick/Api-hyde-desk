@@ -9,8 +9,8 @@ const routes = express.Router();
 
 // Buscar todos os funcionários
 routes.get("/", login, (req, res, next) => {
-  const filters = req.query
- 
+  const filters = req.query;
+
   db.getConnection((erro, conn) => {
     if (erro) {
       return res.status(500).status({
@@ -18,9 +18,12 @@ routes.get("/", login, (req, res, next) => {
       });
     }
     let query =
-    "SELECT * FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
+      "SELECT f.id_funcionario,f.nome,f.matricula,f.usuario,f.status_funcionario,f.senha,f.foto FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
     let keysFilters = Object.keys(filters);
-
+    if (keysFilters.includes("nome")) {
+      query += ` AND f.nome LIKE '${filters["nome"]}'`;
+      keysFilters = keysFilters.filter((item) => item !== "nome");
+    }
     if (keysFilters.length !== 0) {
       query += " WHERE";
 
@@ -55,7 +58,7 @@ routes.get("/", login, (req, res, next) => {
 // Buscar um funcionário
 routes.get("/:id", login, (req, res, next) => {
   const id_funcionario = req.params.id;
-  const query = `SELECT * FROM funcionarios WHERE id_funcionario = ${id_funcionario}`;
+  const query = `SELECT * FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id WHERE id_funcionario = ${id_funcionario}`;
 
   db.getConnection((error, conn) => {
     if (error) {
@@ -257,6 +260,5 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
     });
   });
 });
-
 
 module.exports = routes;
