@@ -4,8 +4,12 @@ const db = require("../../conexao");
 //Email
 const axios = require("axios");
 routes.post("/", async (req, res) => {
-  const token = (Math.random() * 100000000000)
-  const { toemail, menssage, assunto, nome, tipoTabela } = req.body;
+  let token = ""
+  for (let index = 0; index < 6; index++) {
+    let aleatorio = Math.floor(Math.random() * 9)
+    token = token + String(aleatorio)
+  }
+  const { toemail, nome, tipoTabela } = req.body;
    
   let query = `SELECT * FROM ${tipoTabela} WHERE email = ${toemail}`
 
@@ -27,15 +31,15 @@ routes.post("/", async (req, res) => {
   })
   var jsonData = {
     toemail: toemail,
-    token: token,
     nome: nome,
+    token: token,
     tipo: "senha"
   };
   
 
   try {
     const response = await axios.post("https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o", jsonData);
-    return res.status(201).send({menssage: "Email enviado com sucesso!", token})
+    return res.status(201).send({menssage: "Email enviado com sucesso!", token: token})
     console.log(response.status);
   } catch (error) {
     console.log(error);
