@@ -9,24 +9,24 @@ routes.post("/", async (req, res) => {
     let aleatorio = Math.floor(Math.random() * 9)
     token = token + String(aleatorio)
   }
-  const { toemail, nome, tipoTabela } = req.body;
-   
+  let nome = ""
+  const { toemail, tipoTabela } = req.body;
   let query = `SELECT * FROM ${tipoTabela} WHERE email = ${toemail}`
 
-  db.getConnection((error, result) => {
+  db.getConnection((error, conn) => {
     if(error){
       return res.status(500).send({ message: error, })
     }
-    db.query(query, (error, result) => {
+    conn.query(query, (error, result) => {
       conn.release();
-
       if (error) {
         res.status(500).send({
           error: error,
           response: null,
         });
       }
-      
+      nome = result[0].nome
+      res.status(200).send({message: "Email enviado"})
     })
   })
   var jsonData = {
