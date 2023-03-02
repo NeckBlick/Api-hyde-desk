@@ -9,7 +9,7 @@ routes.post("/", async (req, res) => {
     let aleatorio = Math.floor(Math.random() * 9)
     token = token + String(aleatorio)
   }
-  const { toemail, menssage, assunto, nome, tipoTabela } = req.body;
+  const { toemail, nome, tipoTabela } = req.body;
    
   let query = `SELECT * FROM ${tipoTabela} WHERE email = ${toemail}`
 
@@ -31,9 +31,8 @@ routes.post("/", async (req, res) => {
   })
   var jsonData = {
     toemail: toemail,
-    token: token,
     nome: nome,
-    menssage: menssage,
+    token: token,
     tipo: "senha"
   };
   
