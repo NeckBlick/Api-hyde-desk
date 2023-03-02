@@ -11,7 +11,7 @@ routes.post("/", async (req, res) => {
   }
   let nome = ""
   const { toemail, tipoTabela } = req.body;
-  let query = `SELECT * FROM ${tipoTabela} WHERE email = ${toemail}`
+  let query = `SELECT * FROM ${tipoTabela} WHERE email = '${toemail}'`
 
   db.getConnection((error, conn) => {
     if(error){
@@ -26,7 +26,6 @@ routes.post("/", async (req, res) => {
         });
       }
       nome = result[0].nome
-      res.status(200).send({message: "Email enviado"})
     })
   })
   var jsonData = {
@@ -35,7 +34,6 @@ routes.post("/", async (req, res) => {
     token: token,
     tipo: "senha"
   };
-  
 
   try {
     const response = await axios.post("https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o", jsonData);
