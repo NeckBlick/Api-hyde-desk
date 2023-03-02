@@ -33,6 +33,7 @@ routes.post("/", async (req, res) => {
     toemail: toemail,
     token: token,
     nome: nome,
+    menssage: menssage,
     tipo: "senha"
   };
   
