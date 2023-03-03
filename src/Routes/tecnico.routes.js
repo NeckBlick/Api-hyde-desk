@@ -9,6 +9,103 @@ const db = require("../../conexao");
 const upload = require("../../middlewares/uploadImagens");
 const login = require("../../middlewares/login");
 
+
+/**
+ * @swagger
+ * /tecnicos/cadastro:
+ *   post:
+ *     tags: [Técnico]
+ *     summary: Cadastra o técnico com foto
+ *     description: Essa rota serve para cadastrar um técnico
+ *     produces: application/json
+ *     parameters:
+ *       - name: nome
+ *         description: Nome do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: cpf
+ *         description: CPF do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: email
+ *         description: Email do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: foto
+ *         description: Foto de perfil
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: especialidade
+ *         description: Especialidade do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: telefone
+ *         description: Telefone do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: senha
+ *         description: Senha do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: confirmsenha
+ *         description: Confirmar a senha 
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/Tecnico'
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Tecnico'
+ *     responses:
+ *       '201':
+ *         description: Técnico criado com sucesso!
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    Tecnico:
+ *      type: object
+ *      properties:
+ *        nome:
+ *         type: string
+ *         example: João
+ *        cpf:
+ *         type: string
+ *         example: 33333333322
+ *        telefone:
+ *         type: string
+ *         example: 11955554444
+ *        email:
+ *         type: string
+ *         example: example@example.com
+ *        especialidade:
+ *         type: string
+ *         example: Desenvolvedor
+ *        foto:
+ *         type: string
+ *         example: Minha foto
+ *        senha:
+ *         type: string
+ *         example: senha123
+ *        confirmsenha:
+ *         type: string
+ *         example: senha123
+ */
 // Cadastrar tecnico
 routes.post("/cadastro", upload.single("foto"), async (req, res) => {
   const { nome, cpf, email, especialidade, telefone, senha, confirmsenha } =
@@ -126,6 +223,51 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /tecnicos/login:
+ *   post:
+ *     tags: [Técnico]
+ *     summary: Login do técnico a partir do cpf
+ *     description: Essa rota serve para cadastrar um técnico
+ *     produces: application/json
+ *     parameters:
+ *       - name: cpf
+ *         description: CPF do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: senha
+ *         description: Senha do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TecnicoLogin'
+ *     responses:
+ *       '201':
+ *         description: Técnico criado com sucesso!
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    TecnicoLogin:
+ *      type: object
+ *      properties:
+ *        cpf:
+ *         type: string
+ *         example: 33333333322
+ *        senha:
+ *         type: string
+ *         example: senha123
+ */
 // Login
 routes.post("/login", (req, res) => {
   const { cpf, senha } = req.body;
@@ -180,7 +322,42 @@ routes.post("/login", (req, res) => {
     });
   });
 });
-
+/**
+ * @swagger
+ * /tecnicos/{id}:
+ *   get:
+ *     tags: [Técnico]
+ *     summary: Busca um único técnico pelo id
+ *     description: Essa rota serve para buscar um único técnico
+ *     produces: application/json
+ *     parameters:
+ *       - name: id
+ *         description: Id do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TecnicoId'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco!
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    TecnicoId:
+ *      type: object
+ *      properties:
+ *        id:
+ *         type: integer
+ *         format: int64
+ *         example: 1
+ */
 // Chamar técnico em específico
 routes.get("/:id", login, (req, res, next) => {
   const id_tecnico = req.params.id;
@@ -203,6 +380,64 @@ routes.get("/:id", login, (req, res, next) => {
   });
 });
 
+/**
+ * @swagger
+ * /tecnicos/editar/{id}:
+ *   put:
+ *     tags: [Técnico]
+ *     summary: Edita o técnico a partir do id
+ *     description: Essa rota serve para buscar um único técnico
+ *     produces: application/json
+ *     parameters:
+ *       - name: nome
+ *         description: Nome do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: email
+ *         description: email do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: especialidade
+ *         description: Especialidade do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: foto
+ *         description: Foto do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: telefone
+ *         description: Telefone do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TecnicoId'
+ *     responses:
+ *       '200':
+ *         description: Técnico atualizado com sucesso!
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    TecnicoId:
+ *      type: object
+ *      properties:
+ *        id:
+ *         type: integer
+ *         format: int64
+ *         example: 1
+ */
 // Editar um Tecnico
 routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
   const { nome, email, especialidade, telefone } = req.body;
@@ -270,6 +505,52 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /tecnicos/redefinir-senha/{email}:
+ *   put:
+ *     tags: [Técnico]
+ *     summary: Editar a senha do técnico a partir do email
+ *     description: Essa rota serve para editar a senha do técnico a partir do email
+ *     produces: application/json
+ *     parameters:
+ *       - name: email
+ *         description: email do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: senha
+ *         description: Senha do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TecnicoEmail'
+ *     responses:
+ *       '200':
+ *         description: Técnico atualizado com sucesso!
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    TecnicoEmail:
+ *      type: object
+ *      properties:
+ *        email:
+ *         type: string
+ *         example: example@example.com
+ *        senha:
+ *         type: string
+ *         example: senha123
+ */
 routes.put("/editar/:email", (req, res, next) => {
   const { senha } = req.body;
   const email = req.params.id;

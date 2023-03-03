@@ -8,6 +8,44 @@ const routes = express.Router();
 const upload = require("../../middlewares/uploadImagens");
 
 
+
+/**
+ * @swagger
+ * /empresas/{id}:
+ *   get:
+ *     tags: [Empresa]
+ *     summary: Buscar a empresa pelo id
+ *     description: Essa rota serve para buscar a empresa pelo id
+ *     produces: application/json
+ *     parameters:
+ *       - name: id
+ *         description: Id da empresa
+ *         in: formData
+ *         type: integer
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Empresa'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco.
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    Empresa:
+ *      type: object
+ *      properties:
+ *        id:
+ *         type: integer
+ *         example: 2
+ */
 // Buscar uma empresa
 routes.get("/:id", login, (req, res, next) => {
   const empresa = req.params.id;
@@ -34,6 +72,108 @@ routes.get("/:id", login, (req, res, next) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /empresas/cadastro:
+ *   post:
+ *     tags: [Empresa]
+ *     summary: Cadastrar uma empresa
+ *     description: Essa rota serve para cadastrar uma empresa
+ *     produces: application/json
+ *     parameters:
+ *       - name: nome
+ *         description: Nome da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: cnpj
+ *         description: CNPJ da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: email
+ *         description: Email da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: telefone
+ *         description: Telefone da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: foto
+ *         description: Foto de perfil
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: cep
+ *         description: Cep da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: numero_endereco
+ *         description: Número de endereço da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: senha
+ *         description: Senha do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: confirmarsenha
+ *         description: Confirmar a senha 
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/Empresa'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco.
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    Empresa:
+ *      type: object
+ *      properties:
+ *        nome:
+ *         type: string
+ *         example: Empresa do joão
+ *        cnpj:
+ *         type: string
+ *         example: 33333333322
+ *        email:
+ *         type: string
+ *         example: example@example.com
+ *        telefone:
+ *         type: string
+ *         example: 11955554444
+ *        foto:
+ *         type: string
+ *         example: Minha foto
+ *        cep:
+ *         type: string
+ *         example: 12345678
+ *        numero_endereco:
+ *         type: string
+ *         example: 100
+ *        senha:
+ *         type: string
+ *         example: senha123
+ *        confirmsenha:
+ *         type: string
+ *         example: senha123
+ */   
 // Cadastro das empresas
 routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
   const {
@@ -146,6 +286,52 @@ routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /empresas/login:
+ *   post:
+ *     tags: [Empresa]
+ *     summary: Login da empresa a partir do cnpj
+ *     description: Essa rota serve para a empresa efetuar o login através do cnpj
+ *     produces: application/json
+ *     parameters:
+ *       - name: cnpj
+ *         description: CNPJ da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: senha
+ *         description: Senha do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/EmpresaLogin'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco.
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    EmpresaLogin:
+ *      type: object
+ *      properties:
+ *        cnpj:
+ *         type: string
+ *         example: 33333333322
+ *        senha:
+ *         type: string
+ *         example: senha123
+ */   
 // Login
 routes.post("/login", (req, res) => {
   const { cnpj, senha } = req.body;
@@ -207,6 +393,92 @@ routes.post("/login", (req, res) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /empresas/editar/{id}:
+ *   put:
+ *     tags: [Empresa]
+ *     summary: Editar a empresa pelo id
+ *     description: Essa rota serve para editar a empresa pelo id
+ *     produces: application/json
+ *     parameters:
+ *       - name: nome
+ *         description: Nome da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: email
+ *         description: Email da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: telefone
+ *         description: Telefone da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: foto
+ *         description: Foto de perfil
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: cep
+ *         description: Cep da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: numero_endereco
+ *         description: Número de endereço da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: senha
+ *         description: Senha do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/EmpresaId'
+ *     responses:
+ *       '201':
+ *         description: Editado com sucesso.
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    EmpresaId:
+ *      type: object
+ *      properties:
+ *        nome:
+ *         type: string
+ *         example: Empresa do joão
+ *        email:
+ *         type: string
+ *         example: example@example.com
+ *        telefone:
+ *         type: string
+ *         example: 11955554444
+ *        foto:
+ *         type: string
+ *         example: Minha foto
+ *        cep:
+ *         type: string
+ *         example: 12345678
+ *        numero_endereco:
+ *         type: string
+ *         example: 100
+ *        senha:
+ *         type: string
+ *         example: senha123
+ */
 // atualizar empresa
 routes.put("/editar/:id", login, (req, res, next) => {
   const { nome, senha, cep, numero_endereco, telefone, email } = req.body;
@@ -262,6 +534,84 @@ routes.put("/editar/:id", login, (req, res, next) => {
     });
   });
 });
+
+/**
+ * @swagger
+ * /empresas/editar/{email}:
+ *   put:
+ *     tags: [Empresa]
+ *     summary: Editar a empresa pelo email
+ *     description: Essa rota serve para editar a empresa pelo email
+ *     produces: application/json
+ *     parameters:
+ *       - name: nome
+ *         description: Nome da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: email
+ *         description: Email da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: telefone
+ *         description: Telefone da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: cep
+ *         description: Cep da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: numero_endereco
+ *         description: Número de endereço da empresa
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: senha
+ *         description: Senha do técnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/EmpresaId'
+ *     responses:
+ *       '201':
+ *         description: Editado com sucesso.
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    EmpresaId:
+ *      type: object
+ *      properties:
+ *        nome:
+ *         type: string
+ *         example: Empresa do joão
+ *        email:
+ *         type: string
+ *         example: example@example.com
+ *        telefone:
+ *         type: string
+ *         example: 11955554444
+ *        cep:
+ *         type: string
+ *         example: 12345678
+ *        numero_endereco:
+ *         type: string
+ *         example: 100
+ *        senha:
+ *         type: string
+ *         example: senha123
+ */
 routes.put("/editar/:email", (req, res, next) => {
   const { senha } = req.body;
   const email = req.params.id;

@@ -7,6 +7,36 @@ const fs = require("fs");
 const upload = require("../../middlewares/uploadImagens");
 const routes = express.Router();
 
+
+/**
+ * @swagger
+ * /funcionarios/:
+ *   get:
+ *     tags: [Funcionarios]
+ *     summary: Buscar todos os funcionários
+ *     description: Essa rota serve para buscar todos os funcionarios
+ *     produces: application/json
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Funcionarios'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    Funcionarios:
+ *      type: array
+ *      items:
+ *        id:
+ *         type: integer
+ *         example: 2
+ */
 // Buscar todos os funcionários
 routes.get("/", login, (req, res, next) => {
   const filters = req.query;
