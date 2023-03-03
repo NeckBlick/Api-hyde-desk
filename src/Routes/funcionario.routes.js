@@ -260,7 +260,8 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
     });
   });
 });
-routes.put("/editar/:email", (req, res, next) => {
+
+routes.put("/editar/:email", login, (req, res, next) => {
   const { senha } = req.body;
   const email = req.params.id;
 
@@ -286,14 +287,12 @@ routes.put("/editar/:email", (req, res, next) => {
           });
         }
 
-
         bcrypt.genSalt(10, (err, salt) => {
           if (err) {
             return next(err);
           }
 
           bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
-
             const query = `UPDATE funcionarios SET senha = '${hashSenha}' WHERE email = ${email}`;
 
             conn.query(query, (error, result) => {
@@ -302,16 +301,73 @@ routes.put("/editar/:email", (req, res, next) => {
                 return res.status(500).send({ error: error });
               }
             });
-    
-            return res.status(200).send({ mensagem: "Dados alterados com sucesso." })
 
-          })
-
-
-        })
-        
+            return res
+              .status(200)
+              .send({ mensagem: "Dados alterados com sucesso." });
+          });
+        });
       });
     });
   });
 });
+
+routes.put("/desativar/:id_funcionario", login, (req, res, next) => {
+  const { id_funcionario } = req.params;
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Não foi possível desativar o funcionário.",
+        error: error,
+      });
+    }
+
+    const query =
+      "UPDATE funcionarios SET status_funcionario = 'Desativado' WHERE id_funcionario = ?";
+
+    conn.query(query, [id_funcionario], (error, result, fields) => {
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível desativar o funcionário.",
+          error: error,
+        });
+      }
+
+      return res.status(200).send({
+        message: "Funcionário desativado com sucesso.",
+      });
+    });
+  });
+});
+
+routes.put("/ativar/:id_funcionario", login, (req, res, next) => {
+  const { id_funcionario } = req.params;
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Não foi possível ativar o funcionário.",
+        error: error,
+      });
+    }
+
+    const query =
+      "UPDATE funcionarios SET status_funcionario = 'Ativo' WHERE id_funcionario = ?";
+
+    conn.query(query, [id_funcionario], (error, result, fields) => {
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível ativar o funcionário.",
+          error: error,
+        });
+      }
+
+      return res.status(200).send({
+        message: "Funcionário ativado com sucesso.",
+      });
+    });
+  });
+});
+
 module.exports = routes;
