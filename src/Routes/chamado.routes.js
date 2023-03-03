@@ -1,4 +1,5 @@
 const express = require("express");
+const axios = require("axios");
 const db = require("../../conexao");
 const upload = require("../../middlewares/uploadImagens");
 const login = require("../../middlewares/login");
@@ -199,7 +200,7 @@ routes.post("/criar", login, upload.single("anexo"), (req, res, next) => {
         cod_verificacao,
         funcionario_id,
       ],
-      (error, result, fields) => {
+    async  (error, result, fields) => {
         conn.release();
         if (error) {
           console.log(error);
@@ -208,8 +209,7 @@ routes.post("/criar", login, upload.single("anexo"), (req, res, next) => {
             erro: error,
           });
         }
-
-        return res.status(200).send({ message: "Chamado aberto com sucesso." });
+            return res.status(200).send({ message: "Chamado aberto com sucesso." });
       }
     );
   });
@@ -248,7 +248,7 @@ routes.put("/aceitar/:id_chamado", login, (req, res, next) => {
 
       if (result[0].status_chamado === "pendente") {
         const queryDois =
-          "UPDATE chamados SET status_chamado = 'Em andamento', tecnico_id = ? WHERE id_chamado = ?";
+          "UPDATE chamados SET status_chamado = 'andamento', tecnico_id = ? WHERE id_chamado = ?";
 
         conn.query(
           queryDois,

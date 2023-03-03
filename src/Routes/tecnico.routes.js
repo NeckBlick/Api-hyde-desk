@@ -3,6 +3,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
+const axios = require("axios");
 const routes = express.Router();
 const db = require("../../conexao");
 const upload = require("../../middlewares/uploadImagens");
@@ -91,7 +92,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
                 hashSenha,
                 foto.path,
               ],
-              (error, result, fields) => {
+             async (error, result, fields) => {
                 conn.release();
                 if (error) {
                   console.log(error);
@@ -100,11 +101,22 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
                     erro: error,
                   });
                 }
-
-                return res.status(201).send({
-                  message: "Técnico cadastrado com sucesso!",
-                  id_tecnico: result.insertId,
-                });
+                try {
+                  var jsonData = {
+                    toemail: email,
+                    nome: nome,
+                    tipo: "cadastro"
+                  };
+                  const response = await axios.post("https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o", jsonData);
+                  if(response.status == 200){
+                    return res.status(201).send({
+                      message: "Técnico cadastrado com sucesso!",
+                      id_tecnico: result.insertId,
+                    });
+                  }
+                } catch (error) {
+                  return res.status(401).send({menssage: error})
+                }
               }
             );
           });
@@ -258,4 +270,56 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
   });
 });
 
+routes.put("/editar/:email", (req, res, next) => {
+  const { senha } = req.body;
+  const email = req.params.id;
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({ error: error });
+    }
+    const query_get = `SELECT senha FROM tecnicos WHERE email = ${email}`;
+
+    conn.query(query_get, (error, result) => {
+      // conn.release();
+      if (error) {
+        return res.status(500).send({ error: error });
+      }
+      bcrypt.compare(senha, result[0].senha, (erro, result) => {
+        if (erro) {
+          return res.status(401).send({ message: "Falha na autenticação!" });
+        }
+        console.log(result);
+        if (result) {
+          return res.status(422).send({
+            message: "A nova senha não pode ser igual a antiga!",
+          });
+        }
+
+
+        bcrypt.genSalt(10, (err, salt) => {
+          if (err) {
+            return next(err);
+          }
+
+          bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
+
+            const query = `UPDATE tecnicos SET senha = '${hashSenha}' WHERE email = ${email}`;
+
+            conn.query(query, (error, result) => {
+              conn.release();
+              if (error) {
+                return res.status(500).send({ error: error });
+              }
+            });
+    
+            return res.status(200).send({ mensagem: "Dados alterados com sucesso." })
+
+          })
+        })
+        
+      });
+    });
+  });
+});
 module.exports = routes;

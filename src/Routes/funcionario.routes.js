@@ -18,9 +18,12 @@ routes.get("/", login, (req, res, next) => {
       });
     }
     let query =
-      "SELECT f.id_funcionario,f.nome,f.matricula,f.usuario,f.status_funcionario FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
+      "SELECT f.id_funcionario,f.nome,f.matricula,f.usuario,f.status_funcionario,f.senha,f.foto FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
     let keysFilters = Object.keys(filters);
-
+    if (keysFilters.includes("nome")) {
+      query += ` AND f.nome LIKE '${filters["nome"]}'`;
+      keysFilters = keysFilters.filter((item) => item !== "nome");
+    }
     if (keysFilters.length !== 0) {
       query += " WHERE";
 
@@ -137,7 +140,6 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
                   erro: error,
                 });
               }
-
               return res.status(201).send({
                 message: "Funcionário cadastrado com sucesso!",
                 id_funcionario: result.insertId,
@@ -258,5 +260,58 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
     });
   });
 });
+routes.put("/editar/:email", (req, res, next) => {
+  const { senha } = req.body;
+  const email = req.params.id;
 
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({ error: error });
+    }
+    const query_get = `SELECT senha FROM funcionarios WHERE email = ${email}`;
+
+    conn.query(query_get, (error, result) => {
+      // conn.release();
+      if (error) {
+        return res.status(500).send({ error: error });
+      }
+      bcrypt.compare(senha, result[0].senha, (erro, result) => {
+        if (erro) {
+          return res.status(401).send({ message: "Falha na autenticação!" });
+        }
+        console.log(result);
+        if (result) {
+          return res.status(422).send({
+            message: "A nova senha não pode ser igual a antiga!",
+          });
+        }
+
+
+        bcrypt.genSalt(10, (err, salt) => {
+          if (err) {
+            return next(err);
+          }
+
+          bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
+
+            const query = `UPDATE funcionarios SET senha = '${hashSenha}' WHERE email = ${email}`;
+
+            conn.query(query, (error, result) => {
+              conn.release();
+              if (error) {
+                return res.status(500).send({ error: error });
+              }
+            });
+    
+            return res.status(200).send({ mensagem: "Dados alterados com sucesso." })
+
+          })
+
+
+        })
+        
+      });
+    });
+  });
+});
 module.exports = routes;
