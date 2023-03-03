@@ -319,7 +319,7 @@ routes.put("/editar/:email", (req, res, next) => {
   });
 });
 
-routes.put("/desativar/:id_tecnico", (req, res, next) => {
+routes.put("/desativar/:id_tecnico", login, (req, res, next) => {
   const { id_tecnico } = req.params;
 
   db.getConnection((error, conn) => {
@@ -348,7 +348,7 @@ routes.put("/desativar/:id_tecnico", (req, res, next) => {
   });
 });
 
-routes.put("/ativar/:id_tecnico", (req, res, next) => {
+routes.put("/ativar/:id_tecnico", login, (req, res, next) => {
   const { id_tecnico } = req.params;
 
   db.getConnection((error, conn) => {
