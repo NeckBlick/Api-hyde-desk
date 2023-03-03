@@ -175,7 +175,7 @@ routes.get("/:id", login, (req, res, next) => {
  *         example: senha123
  */   
 // Cadastro das empresas
-routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
+routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
   const {
     nome,
     cnpj,
@@ -186,7 +186,7 @@ routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
     senha,
     confirmarsenha,
   } = req.body;
-  const foto = req.file
+  const foto = req.file;
 
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
@@ -248,9 +248,18 @@ routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
 
             conn.query(
               query,
-              [nome, cnpj, cep, numero_endereco, telefone, email, foto.path , hashSenha],
+              [
+                nome,
+                cnpj,
+                cep,
+                numero_endereco,
+                telefone,
+                email,
+                foto.path,
+                hashSenha,
+              ],
 
-            async  (error, result, field) => {
+              async (error, result, field) => {
                 //conn.release() serve para liberar a conexão com o banco de dados para que as conexões abertas não travem as apis
                 conn.release();
                 if (error) {
@@ -263,20 +272,21 @@ routes.post("/cadastro", upload.single('foto'), async (req, res, next) => {
                   var jsonData = {
                     toemail: email,
                     nome: nome,
-                    tipo: "cadastro"
+                    tipo: "cadastro",
                   };
-                  const response = await axios.post("https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o", jsonData);
-                  if(response.status == 200){
-
+                  const response = await axios.post(
+                    "https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o",
+                    jsonData
+                  );
+                  if (response.status == 200) {
                     return res.status(201).send({
                       message: "Empresa cadastrada com sucesso!",
                       id_empresa: result.insertId,
                     });
                   }
                 } catch (error) {
-                  return res.status(401).send({menssage: error})
+                  return res.status(401).send({ menssage: error });
                 }
-                
               }
             );
           });
@@ -361,7 +371,7 @@ routes.post("/login", (req, res) => {
         return res.status(401).send({ message: "Falha na autenticação!" });
       }
 
-      let id = results[0].id_empresa
+      let id = results[0].id_empresa;
 
       bcrypt.compare(senha, results[0].senha, (erro, result) => {
         if (erro) {
@@ -371,7 +381,6 @@ routes.post("/login", (req, res) => {
         if (result) {
           let token = jwt.sign(
             {
-
               id_empresa: results[0].id_empresa,
 
               cnpj: results[0].matricula,
@@ -381,13 +390,14 @@ routes.post("/login", (req, res) => {
               expiresIn: "1d",
             }
           );
-          return res
-            .status(200)
-            .send({ message: "Autenticado com sucesso!", token: token, id: id, tipo: "empresas",});
+          return res.status(200).send({
+            message: "Autenticado com sucesso!",
+            token: token,
+            id: id,
+            tipo: "empresas",
+          });
         }
-        return res
-          .status(401)
-          .send({ message: "CNPJ ou senha inválidos!" });
+        return res.status(401).send({ message: "CNPJ ou senha inválidos!" });
       });
     });
   });
@@ -506,14 +516,12 @@ routes.put("/editar/:id", login, (req, res, next) => {
           });
         }
 
-
         bcrypt.genSalt(10, (err, salt) => {
           if (err) {
             return next(err);
           }
 
           bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
-
             const query = `UPDATE empresas SET nome = '${nome}', senha = '${hashSenha}', cep = '${cep}', numero_endereco = '${numero_endereco}', telefone = '${telefone}', email = '${email}' WHERE id_empresa = ${id_empresa}`;
 
             conn.query(query, (error, result) => {
@@ -522,14 +530,12 @@ routes.put("/editar/:id", login, (req, res, next) => {
                 return res.status(500).send({ error: error });
               }
             });
-    
-            return res.status(200).send({ mensagem: "Dados alterados com sucesso." })
 
-          })
-
-
-        })
-        
+            return res
+              .status(200)
+              .send({ mensagem: "Dados alterados com sucesso." });
+          });
+        });
       });
     });
   });
@@ -638,14 +644,12 @@ routes.put("/editar/:email", (req, res, next) => {
           });
         }
 
-
         bcrypt.genSalt(10, (err, salt) => {
           if (err) {
             return next(err);
           }
 
           bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
-
             const query = `UPDATE empresas SET senha = '${hashSenha}' WHERE email = ${email}`;
 
             conn.query(query, (error, result) => {
@@ -654,14 +658,70 @@ routes.put("/editar/:email", (req, res, next) => {
                 return res.status(500).send({ error: error });
               }
             });
-    
-            return res.status(200).send({ mensagem: "Dados alterados com sucesso." })
 
-          })
+            return res
+              .status(200)
+              .send({ mensagem: "Dados alterados com sucesso." });
+          });
+        });
+      });
+    });
+  });
+});
 
+routes.put("/desativar/:id_empresa", login, (req, res, next) => {
+  const { id_empresa } = req.params;
 
-        })
-        
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Não foi possível desativar a empresa.",
+        error: error,
+      });
+    }
+
+    const query =
+      "UPDATE empresas SET status_empresa = 'Desativado' WHERE id_empresa = ?";
+
+    conn.query(query, [id_empresa], (error, result, fields) => {
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível desativar a empresa.",
+          error: error,
+        });
+      }
+
+      return res.status(200).send({
+        message: "Empresa desativada com sucesso.",
+      });
+    });
+  });
+});
+
+routes.put("/ativar/:id_empresa", login, (req, res, next) => {
+  const { id_empresa } = req.params;
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Não foi possível ativar a empresa.",
+        error: error,
+      });
+    }
+
+    const query =
+      "UPDATE empresas SET status_empresa = 'Ativo' WHERE id_empresa = ?";
+
+    conn.query(query, [id_empresa], (error, result, fields) => {
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível ativar a empresa.",
+          error: error,
+        });
+      }
+
+      return res.status(200).send({
+        message: "Empresa ativada com sucesso.",
       });
     });
   });

@@ -189,7 +189,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
                 hashSenha,
                 foto.path,
               ],
-             async (error, result, fields) => {
+              async (error, result, fields) => {
                 conn.release();
                 if (error) {
                   console.log(error);
@@ -202,17 +202,20 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
                   var jsonData = {
                     toemail: email,
                     nome: nome,
-                    tipo: "cadastro"
+                    tipo: "cadastro",
                   };
-                  const response = await axios.post("https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o", jsonData);
-                  if(response.status == 200){
+                  const response = await axios.post(
+                    "https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o",
+                    jsonData
+                  );
+                  if (response.status == 200) {
                     return res.status(201).send({
                       message: "Técnico cadastrado com sucesso!",
                       id_tecnico: result.insertId,
                     });
                   }
                 } catch (error) {
-                  return res.status(401).send({menssage: error})
+                  return res.status(401).send({ menssage: error });
                 }
               }
             );
@@ -296,7 +299,7 @@ routes.post("/login", (req, res) => {
         return res.status(401).send({ message: "Cpf ou senha inválidos!" });
       }
 
-      let id = results[0].id_tecnico
+      let id = results[0].id_tecnico;
 
       bcrypt.compare(senha, results[0].senha, (erro, result) => {
         if (erro) {
@@ -313,9 +316,12 @@ routes.post("/login", (req, res) => {
               expiresIn: "1d",
             }
           );
-          return res
-            .status(200)
-            .send({ message: "Autenticado com sucesso!", token: token, id: id, tipo: "tecnicos" });
+          return res.status(200).send({
+            message: "Autenticado com sucesso!",
+            token: token,
+            id: id,
+            tipo: "tecnicos",
+          });
         }
         return res.status(401).send({ message: "Cpf ou senha inválidos!" });
       });
@@ -442,7 +448,6 @@ routes.get("/:id", login, (req, res, next) => {
 routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
   const { nome, email, especialidade, telefone } = req.body;
   const id_tecnico = req.params.id;
-  
 
   if (!nome) {
     return res.status(422).send({ message: "O nome é obrigatório!" });
@@ -471,7 +476,7 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
         return res.status(500).send({ error: error });
       }
 
-      const foto_antiga = result[0].foto
+      const foto_antiga = result[0].foto;
       if (foto) {
         const query = `UPDATE tecnicos SET nome = '${nome}', foto = ?, especialidade = '${especialidade}', telefone = '${telefone}', email = '${email}' WHERE id_tecnico = ${id_tecnico}`;
 
@@ -480,12 +485,9 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
           if (error) {
             return res.status(500).send({ error: error });
           }
-          console.log(foto_antiga)
-          fs.unlinkSync(foto_antiga)
-
+          console.log(foto_antiga);
+          fs.unlinkSync(foto_antiga);
         });
-
-      
       } else {
         const query = `UPDATE tecnicos SET nome = '${nome}', foto = ?, especialidade = '${especialidade}', telefone = '${telefone}', email = '${email}' WHERE id_tecnico = ${id_tecnico}`;
         conn.query(query, [result[0].foto], (error, result) => {
@@ -496,11 +498,7 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
         });
       }
 
-
-
-      return res
-        .status(200)
-        .send({ mensagem: "Dados alterados com sucesso." });
+      return res.status(200).send({ mensagem: "Dados alterados com sucesso." });
     });
   });
 });
@@ -577,14 +575,12 @@ routes.put("/editar/:email", (req, res, next) => {
           });
         }
 
-
         bcrypt.genSalt(10, (err, salt) => {
           if (err) {
             return next(err);
           }
 
           bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
-
             const query = `UPDATE tecnicos SET senha = '${hashSenha}' WHERE email = ${email}`;
 
             conn.query(query, (error, result) => {
@@ -593,14 +589,73 @@ routes.put("/editar/:email", (req, res, next) => {
                 return res.status(500).send({ error: error });
               }
             });
-    
-            return res.status(200).send({ mensagem: "Dados alterados com sucesso." })
 
-          })
-        })
-        
+            return res
+              .status(200)
+              .send({ mensagem: "Dados alterados com sucesso." });
+          });
+        });
       });
     });
   });
 });
+
+routes.put("/desativar/:id_tecnico", login, (req, res, next) => {
+  const { id_tecnico } = req.params;
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Não foi possível desativar o técnico.",
+        error: error,
+      });
+    }
+
+    const query =
+      "UPDATE tecnicos SET status_tecnico = 'Desativado' WHERE id_tecnico = ?";
+
+    conn.query(query, [id_tecnico], (error, result, fields) => {
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível desativar o técnico.",
+          error: error,
+        });
+      }
+
+      return res.status(200).send({
+        message: "Técnico desativado com sucesso.",
+      });
+    });
+  });
+});
+
+routes.put("/ativar/:id_tecnico", login, (req, res, next) => {
+  const { id_tecnico } = req.params;
+
+  db.getConnection((error, conn) => {
+    if (error) {
+      return res.status(500).send({
+        message: "Não foi possível desativar o técnico.",
+        error: error,
+      });
+    }
+
+    const query =
+      "UPDATE tecnicos SET status_tecnico = 'Ativo' WHERE id_tecnico = ?";
+
+    conn.query(query, [id_tecnico], (error, result, fields) => {
+      if (error) {
+        return res.status(500).send({
+          message: "Não foi possível desativar o técnico.",
+          error: error,
+        });
+      }
+
+      return res.status(200).send({
+        message: "Técnico ativado com sucesso.",
+      });
+    });
+  });
+});
+
 module.exports = routes;

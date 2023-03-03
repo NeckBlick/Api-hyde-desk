@@ -200,7 +200,7 @@ routes.post("/criar", login, upload.single("anexo"), (req, res, next) => {
         cod_verificacao,
         funcionario_id,
       ],
-    async  (error, result, fields) => {
+      async (error, result, fields) => {
         conn.release();
         if (error) {
           console.log(error);
@@ -209,7 +209,7 @@ routes.post("/criar", login, upload.single("anexo"), (req, res, next) => {
             erro: error,
           });
         }
-            return res.status(200).send({ message: "Chamado aberto com sucesso." });
+        return res.status(200).send({ message: "Chamado aberto com sucesso." });
       }
     );
   });
