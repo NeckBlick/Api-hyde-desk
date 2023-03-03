@@ -268,7 +268,7 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
   });
 });
 
-routes.put("/editar/:email", (req, res, next) => {
+routes.put("/redefinir-senha/:email", (req, res, next) => {
   const { senha } = req.body;
   const email = req.params.id;
 
