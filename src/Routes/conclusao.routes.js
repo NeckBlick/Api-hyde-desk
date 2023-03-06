@@ -4,6 +4,34 @@ const login = require("../../middlewares/login");
 
 const routes = express.Router();
 
+/**
+ * @swagger
+ * /conclusoes:
+ *   get:
+ *     tags: [Conclusões]
+ *     summary: Busca todas as conclusões
+ *     description: Essa rota serve para buscar todas as conclusões
+ *     produces: application/json
+ *     parameters:
+ *       - name: num_avaliacao
+ *         description: Nota da conclusão
+ *         in: query
+ *         type: String
+ *         required: false
+ *       - name: chamado_id
+ *         description: ID do chamado concluído
+ *         in: query
+ *         type: String
+ *         required: false
+ *     responses:
+ *       '200':
+ *         description: Sucesso ao buscar as conclusões!
+ *       '401':
+ *         description: Não autorizado.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ */
+
 // Buscar todas conclusões
 routes.get("/", login, (req, res, next) => {
   const filters = req.query;
@@ -54,7 +82,30 @@ routes.get("/", login, (req, res, next) => {
   });
 });
 
-// Buscar conclusões pelo ID do chamado
+/**
+ * @swagger
+ * /conclusoes/{id_conclusao}:
+ *   get:
+ *     tags: [Conclusões]
+ *     summary: Busca a conclusão pelo ID
+ *     description: Essa rota serve para buscar a conclusão pelo ID
+ *     produces: application/json
+ *     parameters:
+ *       - name: id_conclusao
+ *         description: ID da conclusão
+ *         in: path
+ *         type: String
+ *         required: true
+ *     responses:
+ *       '200':
+ *         description: Sucesso ao buscar a conclusão!
+ *       '401':
+ *         description: Não autorizado.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ */
+
+// Buscar conclusões pelo ID
 routes.get("/:id_conclusao", login, (req, res, next) => {
   const { id_conclusao } = req.params;
 

@@ -6,6 +6,64 @@ const login = require("../../middlewares/login");
 
 const routes = express.Router();
 
+/**
+ * @swagger
+ * /chamados:
+ *   get:
+ *     tags: [Chamados]
+ *     summary: Busca todos os chamados
+ *     description: Essa rota serve para buscar todos os chamados
+ *     produces: application/json
+ *     parameters:
+ *       - name: status_chamado
+ *         description: Status do chamado
+ *         in: query
+ *         type: String
+ *         required: false
+ *       - name: prioridade
+ *         description: Prioridade do chamado
+ *         in: query
+ *         type: String
+ *         required: false
+ *       - name: patrimonio
+ *         description: Patrimônio do hardaware associado ao chamado
+ *         in: query
+ *         type: String
+ *         required: false
+ *       - name: problema
+ *         description: Problema do chamado
+ *         in: query
+ *         type: String
+ *         required: false
+ *       - name: setor
+ *         description: Setor do problema
+ *         in: query
+ *         type: String
+ *         required: false
+ *       - name: cod_verificacao
+ *         description: Codigo de verificação do chamado
+ *         in: query
+ *         type: String
+ *         required: false
+ *       - name: tecnico_id
+ *         description: ID do técnico associado ao chamado
+ *         in: query
+ *         type: String
+ *         required: false
+ *       - name: funcionario_id
+ *         description: ID do funcionário que abriu o chamado
+ *         in: query
+ *         type: String
+ *         required: false
+ *     responses:
+ *       '200':
+ *         description: Sucesso ao buscar os chamados!
+ *       '401':
+ *         description: Não autorizado.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ */
+
 // Buscar todos os chamados
 routes.get("/", login, (req, res, next) => {
   const filters = req.query;
@@ -85,6 +143,29 @@ routes.get("/", login, (req, res, next) => {
   });
 });
 
+/**
+ * @swagger
+ * /chamados/{id_chamado}:
+ *   get:
+ *     tags: [Chamados]
+ *     summary: Busca um chamado pelo ID
+ *     description: Essa rota serve para buscar o chamado pelo ID
+ *     produces: application/json
+ *     parameters:
+ *       - name: id
+ *         description: ID do chamado
+ *         in: path
+ *         type: String
+ *         required: false
+ *     responses:
+ *       '200':
+ *         description: Sucesso ao buscar o chamado!
+ *       '401':
+ *         description: Não autorizado.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ */
+
 // Buscar um único chamado
 routes.get("/:id", login, (req, res, next) => {
   const id_chamado = req.params.id;
@@ -135,6 +216,94 @@ routes.get("/:id", login, (req, res, next) => {
     });
   });
 });
+
+/**
+ * @swagger
+ * /chamados/criar:
+ *   post:
+ *     tags: [Chamados]
+ *     summary: Cria um chamado
+ *     description: Essa rota serve para criar um chamado
+ *     produces: multipart/form-data
+ *     parameters:
+ *       - name: prioridade
+ *         description: Prioridade do chamado
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: patrimonio
+ *         description: Patrimônio do hardware associado ao chamado
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: problema
+ *         description: Problema do chamado
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: descricao
+ *         description: Descrição do problema
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: setor
+ *         description: Setor do problema
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: funcionario_id
+ *         description: ID do funcionário que irá abrir o chamado
+ *         in: formData
+ *         type: int32
+ *         required: true
+ *       - name: anexo
+ *         description: Anexo do problema
+ *         in: formData
+ *         type: String
+ *         format: binary
+ *         required: false
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/Chamado'
+ *     responses:
+ *       '201':
+ *         description: Chamado criado com sucesso!
+ *       '422':
+ *         description: Alguma informação faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    Chamado:
+ *      type: object
+ *      properties:
+ *        prioridade:
+ *         type: string
+ *         example: Alta
+ *        patrimonio:
+ *         type: string
+ *         example: 23456781
+ *        problema:
+ *         type: string
+ *         example: Hardware
+ *        descricao:
+ *         type: string
+ *         example: Monitor não liga
+ *        setor:
+ *         type: string
+ *         example: RH
+ *        funcionario:
+ *         type: int32
+ *         example: 1
+ *        anexo:
+ *         type: string
+ *         contentMediaType: image/png
+ *         contentEncoding: base64
+ */
 
 // Criação dos chamados
 routes.post("/criar", login, upload.single("anexo"), (req, res, next) => {
@@ -215,6 +384,51 @@ routes.post("/criar", login, upload.single("anexo"), (req, res, next) => {
   });
 });
 
+/**
+ * @swagger
+ * /chamados/aceitar/{id_chamado}:
+ *   put:
+ *     tags: [Chamados]
+ *     summary: Aceita um chamado
+ *     description: Essa rota serve para aceitar um chamado aberto
+ *     produces: application/json
+ *     parameters:
+ *       - name: id_chamado
+ *         description: ID do chamado
+ *         in: path
+ *         type: String
+ *         required: true
+ *       - name: tecnico_id
+ *         description: ID do técnico que aceitou o chamado
+ *         in: formData
+ *         type: Number
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar o seguinte dado no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AceitarChamado'
+ *     responses:
+ *       '200':
+ *         description: Sucesso ao aceitar o chamado!
+ *       '401':
+ *         description: Não autorizado.
+ *       '422':
+ *         description: Alguma informação faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    AceitarChamado:
+ *      type: object
+ *      properties:
+ *        tecnico_id:
+ *         type: number
+ *         example: 1
+ */
+
 // Aceitar chamado
 routes.put("/aceitar/:id_chamado", login, (req, res, next) => {
   const { id_chamado } = req.params;
@@ -277,6 +491,31 @@ routes.put("/aceitar/:id_chamado", login, (req, res, next) => {
   });
 });
 
+/**
+ * @swagger
+ * /chamados/cancelar/{id_chamado}:
+ *   put:
+ *     tags: [Chamados]
+ *     summary: Cancela um chamado
+ *     description: Essa rota serve para cancelar um chamado
+ *     produces: application/json
+ *     parameters:
+ *       - name: id_chamado
+ *         description: ID do chamado
+ *         in: path
+ *         type: String
+ *         required: true
+ *     responses:
+ *       '200':
+ *         description: Sucesso ao cancelar o chamado!
+ *       '401':
+ *         description: Não autorizado.
+ *       '422':
+ *         description: Alguma informação faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ */
+
 // Cancelar chamado
 routes.put("/cancelar/:id_chamado", login, (req, res, next) => {
   const { id_chamado } = req.params;
@@ -325,6 +564,31 @@ routes.put("/cancelar/:id_chamado", login, (req, res, next) => {
     });
   });
 });
+
+/**
+ * @swagger
+ * /chamados/suspender/{id_chamado}:
+ *   put:
+ *     tags: [Chamados]
+ *     summary: Suspende um chamado
+ *     description: Essa rota serve para suspender um chamado em andamento
+ *     produces: application/json
+ *     parameters:
+ *       - name: id_chamado
+ *         description: ID do chamado
+ *         in: path
+ *         type: String
+ *         required: true
+ *     responses:
+ *       '200':
+ *         description: Sucesso ao suspender o chamado!
+ *       '401':
+ *         description: Não autorizado.
+ *       '422':
+ *         description: Alguma informação faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ */
 
 // Suspender chamado
 routes.put("/suspender/:id_chamado", login, (req, res, next) => {
@@ -378,6 +642,60 @@ routes.put("/suspender/:id_chamado", login, (req, res, next) => {
     });
   });
 });
+
+/**
+ * @swagger
+ * /chamados/concluir/{id_chamado}:
+ *   put:
+ *     tags: [Chamados]
+ *     summary: Conclui um chamado
+ *     description: Essa rota serve para concluir um chamado em andamento
+ *     produces: multipart/form-data
+ *     parameters:
+ *       - name: id_chamado
+ *         description: ID do chamado
+ *         in: path
+ *         type: String
+ *         required: true
+ *       - name: descricao
+ *         description: Decrição do problema resolvido
+ *         in: formData
+ *         type: Number
+ *         required: true
+ *       - name: anexo
+ *         description: Anexo do problema resolvido
+ *         in: formData
+ *         type: String
+ *         required: false
+ *     requestBody:
+ *       description: Precisará passar o seguinte dado no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/ConcluirChamado'
+ *     responses:
+ *       '201':
+ *         description: Sucesso ao concluir o chamado!
+ *       '401':
+ *         description: Não autorizado.
+ *       '422':
+ *         description: Alguma informação faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    ConcluirChamado:
+ *      type: object
+ *      properties:
+ *        descricao:
+ *         type: string
+ *         example: O problema no monitor foi resolvido
+ *        anexo:
+ *         type: string
+ *         contentMediaType: image/png
+ *         contentEncoding: base64
+ */
 
 // Concluir chamado
 routes.put(
@@ -463,6 +781,59 @@ routes.put(
     });
   }
 );
+
+/**
+ * @swagger
+ * /chamados/avaliar/{id_chamado}:
+ *   put:
+ *     tags: [Chamados]
+ *     summary: Avalia a conclusão do chamado
+ *     description: Essa rota serve para avaliar a conlusão do chamado
+ *     produces: application/json
+ *     parameters:
+ *       - name: id_chamado
+ *         description: ID do chamado
+ *         in: path
+ *         type: String
+ *         required: true
+ *       - name: num_avaliacao
+ *         description: Nota para a conclusão do chamado
+ *         in: formData
+ *         type: Number
+ *         required: true
+ *       - name: desc_avaliacao
+ *         description: Descrição da nota da conclusão
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar o seguinte dado no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AvaliarChamado'
+ *     responses:
+ *       '200':
+ *         description: Sucesso ao avaliar o chamado!
+ *       '401':
+ *         description: Não autorizado.
+ *       '422':
+ *         description: Alguma informação faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    AvaliarChamado:
+ *      type: object
+ *      properties:
+ *        num_avaliacao:
+ *         type: number
+ *         example: 5
+ *        desc_avaliacao:
+ *         type: string
+ *         example: Funcionou muito bem
+ */
 
 // Avaliar chamado
 routes.put("/avaliar/:id_chamado", login, (req, res, next) => {
