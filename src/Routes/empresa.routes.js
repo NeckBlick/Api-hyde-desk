@@ -671,6 +671,42 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /empresas/desativar/{id}:
+ *   put:
+ *     tags: [Empresa]
+ *     summary: Desativar a empresa no banco de dados
+ *     description: Essa rota serve para desativar a empresa no banco de dados
+ *     produces: application/json
+ *     parameters:
+ *       - name: id_empresa
+ *         description: Id da empresa
+ *         in: formData
+ *         type: Number
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/EmpresaDesativar'
+ *     responses:
+ *       '201':
+ *         description: Editado com sucesso.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    EmpresaDesativar:
+ *      type: object
+ *      properties:
+ *        id:
+ *         type: Number
+ *         example: 2
+ */
 routes.put("/desativar/:id_empresa", login, (req, res, next) => {
   const { id_empresa } = req.params;
 
@@ -700,6 +736,42 @@ routes.put("/desativar/:id_empresa", login, (req, res, next) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /empresas/ativar/{id}:
+ *   put:
+ *     tags: [Empresa]
+ *     summary: Ativar a empresa no banco de dados
+ *     description: Essa rota serve para ativar a empresa no banco de dados
+ *     produces: application/json
+ *     parameters:
+ *       - name: id_empresa
+ *         description: Id da empresa
+ *         in: formData
+ *         type: Number
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/EmpresaDesativar'
+ *     responses:
+ *       '201':
+ *         description: Editado com sucesso.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    EmpresaDesativar:
+ *      type: object
+ *      properties:
+ *        id:
+ *         type: Number
+ *         example: 2
+ */
 routes.put("/ativar/:id_empresa", login, (req, res, next) => {
   const { id_empresa } = req.params;
 

@@ -37,6 +37,7 @@ const routes = express.Router();
  *         type: integer
  *         example: 2
  */
+
 // Buscar todos os funcionários
 routes.get("/", login, (req, res, next) => {
   const filters = req.query;
@@ -85,6 +86,36 @@ routes.get("/", login, (req, res, next) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /funcionarios/{id}:
+ *   get:
+ *     tags: [Funcionarios]
+ *     summary: Buscar um funcionário
+ *     description: Essa rota serve para buscar um funcionario
+ *     produces: application/json
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Funcionarios'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    Funcionarios:
+ *      type: array
+ *      items:
+ *        id:
+ *         type: integer
+ *         example: 2
+ */
 // Buscar um funcionário
 routes.get("/:id", login, (req, res, next) => {
   const id_funcionario = req.params.id;
@@ -106,6 +137,94 @@ routes.get("/:id", login, (req, res, next) => {
   });
 });
 
+/**
+ * @swagger
+ * /funcionarios/cadastro:
+ *   post:
+ *     tags: [Funcionarios]
+ *     summary: Cadastrar um funcionário
+ *     description: Essa rota serve para cadastrar um funcionário
+ *     produces: application/json
+ *     parameters:
+ *       - name: nome
+ *         description: Nome do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: email
+ *         description: Email do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: matricula
+ *         description: Matricula do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: usuario
+ *         description: Usuário do funcionario
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: id_empresa
+ *         description: Id da empresa que ele presta serviço
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: senha
+ *         description: Senha do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: confirmsenha
+ *         description: Confirmar a senha 
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/FuncionarioCadastro'
+ *     responses:
+ *       '201':
+ *         description: Cadastrado com sucesso!
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    FuncionarioCadastro:
+ *      type: object
+ *      properties:
+ *        nome:
+ *         type: string
+ *         example: Empresa do joão
+ *        email:
+ *         type: string
+ *         example: example@example.com
+ *        matricula:
+ *         type: string
+ *         example: 11955554444
+ *        id_empresa:
+ *         type: Number
+ *         example: 1
+ *        usuario:
+ *         type: string
+ *         example: 12345678
+ *        numero_endereco:
+ *         type: string
+ *         example: 100
+ *        senha:
+ *         type: string
+ *         example: senha123
+ *        confirmsenha:
+ *         type: string
+ *         example: senha123
+ */
 // Cadastro
 routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
   const { nome, id_empresa, matricula, usuario, senha, confirmsenha } =
@@ -182,6 +301,53 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
   });
 });
 
+
+
+/**
+ * @swagger
+ * /funcionarios/login:
+ *   post:
+ *     tags: [Funcionarios]
+ *     summary: Login do funcionário
+ *     description: Essa rota serve para o funcionário fazer login
+ *     produces: application/json
+ *     parameters:
+ *       - name: usuario
+ *         description: Usuario do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: senha
+ *         description: Senha do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/FuncionarioLogin'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco.
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    FuncionarioLogin:
+ *      type: object
+ *      properties:
+ *        usuario:
+ *         type: string
+ *         example: joão
+ *        senha:
+ *         type: string
+ *         example: senha123
+ */
 // Login
 routes.post("/login", (req, res) => {
   const { matricula, senha } = req.body;
@@ -244,6 +410,60 @@ routes.post("/login", (req, res) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /funcionarios/editar/{id}:
+ *   post:
+ *     tags: [Funcionarios]
+ *     summary: Login do funcionário
+ *     description: Essa rota serve para o funcionário fazer login
+ *     produces: application/json
+ *     parameters:
+ *       - name: id_funcionario
+ *         description: Id do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: nome
+ *         description: Nome do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: usuario
+ *         description: Usuario do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/FuncionarioEditar'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco.
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    FuncionarioEditar:
+ *      type: object
+ *      properties:
+ *        id:
+ *         type: integer
+ *         example: joao
+ *        nome:
+ *         type: string
+ *         example: joao
+ *        usuario:
+ *         type: string
+ *         example: joão
+ */
 // Editar um funcionário
 routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
   const { nome, usuario } = req.body;
@@ -291,6 +511,52 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /funcionarios/redefinir-senha/{email}:
+ *   post:
+ *     tags: [Funcionarios]
+ *     summary: Login do funcionário
+ *     description: Essa rota serve para o funcionário fazer login
+ *     produces: application/json
+ *     parameters:
+ *       - name: email
+ *         description: Email do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: senha
+ *         description: Senha do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/FuncionarioEditar'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco.
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    FuncionarioEditar:
+ *      type: object
+ *      properties:
+ *        email:
+ *         type: String
+ *         example: example@example.com
+ *        senha:
+ *         type: string
+ *         example: joao123
+ */
 routes.put("/redefinir-senha/:email", (req, res, next) => {
   const { senha } = req.body;
   const { email } = req.params;
@@ -343,6 +609,46 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
     });
   });
 });
+
+
+
+/**
+ * @swagger
+ * /funcionarios/desativar/{id}:
+ *   post:
+ *     tags: [Funcionarios]
+ *     summary: Desativar o funcionário
+ *     description: Essa rota serve para desativar o funcionario
+ *     produces: application/json
+ *     parameters:
+ *       - name: id_funcionario
+ *         description: Id do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/FuncionarioDesativar'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco.
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    FuncionarioDesativar:
+ *      type: object
+ *      properties:
+ *        id:
+ *         type: integer
+ *         example: joao
+ */
 routes.put("/desativar/:id_funcionario", login, (req, res, next) => {
   const { id_funcionario } = req.params;
 
@@ -372,6 +678,44 @@ routes.put("/desativar/:id_funcionario", login, (req, res, next) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /funcionarios/ativar/{id}:
+ *   post:
+ *     tags: [Funcionarios]
+ *     summary: Ativar o funcionário
+ *     description: Essa rota serve para ativar o funcionario
+ *     produces: application/json
+ *     parameters:
+ *       - name: id_funcionario
+ *         description: Id do funcionário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/FuncionarioAtivar'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco.
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    FuncionarioAtivar:
+ *      type: object
+ *      properties:
+ *        id:
+ *         type: integer
+ *         example: joao
+ */
 routes.put("/ativar/:id_funcionario", login, (req, res, next) => {
   const { id_funcionario } = req.params;
 
