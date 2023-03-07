@@ -602,6 +602,44 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /tecnicos/desativar/{id}:
+ *   post:
+ *     tags: [Técnico]
+ *     summary: Desativar o tecnico
+ *     description: Essa rota serve para desativar o tecnico
+ *     produces: application/json
+ *     parameters:
+ *       - name: id_tecnico
+ *         description: Id do tecnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/TecnicoDesativar'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco.
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    TecnicoDesativar:
+ *      type: object
+ *      properties:
+ *        id:
+ *         type: integer
+ *         example: joao
+ */
 routes.put("/desativar/:id_tecnico", login, (req, res, next) => {
   const { id_tecnico } = req.params;
 
@@ -630,6 +668,45 @@ routes.put("/desativar/:id_tecnico", login, (req, res, next) => {
     });
   });
 });
+
+
+/**
+ * @swagger
+ * /tecnicos/ativar/{id}:
+ *   post:
+ *     tags: [Técnico]
+ *     summary: Ativar o tecnico
+ *     description: Essa rota serve para ativar o tecnico
+ *     produces: application/json
+ *     parameters:
+ *       - name: id_tecnico
+ *         description: Id do tecnico
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/TecnicoAtivar'
+ *     responses:
+ *       '200':
+ *         description: Resultado do banco.
+ *       '422':
+ *         description: Alguma informção faltando.
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    TecnicoAtivar:
+ *      type: object
+ *      properties:
+ *        id:
+ *         type: integer
+ *         example: joao
+ */
 
 routes.put("/ativar/:id_tecnico", login, (req, res, next) => {
   const { id_tecnico } = req.params;

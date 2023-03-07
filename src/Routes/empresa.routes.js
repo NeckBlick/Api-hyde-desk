@@ -543,40 +543,20 @@ routes.put("/editar/:id", login, (req, res, next) => {
 
 /**
  * @swagger
- * /empresas/editar/{email}:
+ * /empresas/redefinir-senha/{email}:
  *   put:
  *     tags: [Empresa]
  *     summary: Editar a empresa pelo email
  *     description: Essa rota serve para editar a empresa pelo email
  *     produces: application/json
  *     parameters:
- *       - name: nome
- *         description: Nome da empresa
- *         in: formData
- *         type: String
- *         required: true
  *       - name: email
  *         description: Email da empresa
  *         in: formData
  *         type: String
  *         required: true
- *       - name: telefone
- *         description: Telefone da empresa
- *         in: formData
- *         type: String
- *         required: true
- *       - name: cep
- *         description: Cep da empresa
- *         in: formData
- *         type: String
- *         required: true
- *       - name: numero_endereco
- *         description: Número de endereço da empresa
- *         in: formData
- *         type: String
- *         required: true
  *       - name: senha
- *         description: Senha do técnico
+ *         description: Nova senha da empresa
  *         in: formData
  *         type: String
  *         required: true
@@ -586,7 +566,7 @@ routes.put("/editar/:id", login, (req, res, next) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/EmpresaId'
+ *             $ref: '#/components/schemas/EmailEmpresa'
  *     responses:
  *       '201':
  *         description: Editado com sucesso.
@@ -596,24 +576,12 @@ routes.put("/editar/:id", login, (req, res, next) => {
  *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
  * components:
  *  schemas:
- *    EmpresaId:
+ *    EmailEmpresa:
  *      type: object
  *      properties:
- *        nome:
- *         type: string
- *         example: Empresa do joão
  *        email:
  *         type: string
  *         example: example@example.com
- *        telefone:
- *         type: string
- *         example: 11955554444
- *        cep:
- *         type: string
- *         example: 12345678
- *        numero_endereco:
- *         type: string
- *         example: 100
  *        senha:
  *         type: string
  *         example: senha123

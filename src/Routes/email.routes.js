@@ -1,6 +1,52 @@
 const express = require("express");
 const routes = express.Router();
 const db = require("../../conexao");
+
+
+
+/**
+ * @swagger
+ * /email:
+ *   put:
+ *     tags: [Email]
+ *     summary: Enviar email
+ *     description: Essa rota serve para enviar email
+ *     produces: application/json
+ *     parameters:
+ *       - name: toemail
+ *         description: Email do destinatário
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: tipoTabela
+ *         description: o tpo da tabela em que o usuário está  cadastrado
+ *         in: formData
+ *         type: String
+ *         required: true
+ *     requestBody:
+ *       description: Precisará passar os seguintes dados no corpo da requisição
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Email'
+ *     responses:
+ *       '201':
+ *         description: Email enviado com sucesso!
+ *       '500':
+ *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
+ * components:
+ *  schemas:
+ *    Email:
+ *      type: object
+ *      properties:
+ *        toemail:
+ *         type: string
+ *         example: example@example.com
+ *        tipoTabela:
+ *         type: string
+ *         example: tecnicos
+ */
 //Email
 const axios = require("axios");
 routes.post("/", async (req, res) => {
