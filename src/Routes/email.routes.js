@@ -2,8 +2,6 @@ const express = require("express");
 const routes = express.Router();
 const db = require("../../conexao");
 
-
-
 /**
  * @swagger
  * /email:
@@ -50,23 +48,33 @@ const db = require("../../conexao");
 //Email
 const axios = require("axios");
 routes.post("/", async (req, res) => {
-
-  let token = ""
-  for (let index = 0; index < 6; index++) {
-    let aleatorio = Math.floor(Math.random() * 9)
-    token = token + String(aleatorio)
-  }
   const { toemail, tipoTabela } = req.body;
-  let query = `SELECT * FROM ${tipoTabela} WHERE email = '${toemail}'`
+  let tipoEmail = "";
+
+  if (tipoTabela === "empresas") {
+    tipoEmail = "empresa";
+  } else if (tipoTabela === "tecnicos") {
+    tipoEmail = "tecnico";
+    console.log(tipoEmail);
+  } else {
+    tipoEmail = "funcionario";
+  }
+
+  let token = "";
+  for (let index = 0; index < 6; index++) {
+    let aleatorio = Math.floor(Math.random() * 9);
+    token = token + String(aleatorio);
+  }
+  let query = `SELECT * FROM ${tipoTabela} WHERE email_${tipoEmail} = '${toemail}'`;
 
   var jsonData = {
     toemail: "",
     token: token,
-    tipo: "senha"
+    tipo: "senha",
   };
   db.getConnection((error, conn) => {
     if (error) {
-      return res.status(500).send({ message: error, })
+      return res.status(500).send({ message: error });
     }
 
     conn.query(query, (error, result) => {
@@ -78,26 +86,31 @@ routes.post("/", async (req, res) => {
         });
       }
       if (result.length > 0) {
-        nome = result[0].nome
-        jsonData.toemail = result[0].email
+        nome = result[0].nome;
+        jsonData.toemail = result[0].email;
         if (jsonData.toemail.length > 0) {
           try {
-            async function enviarEmail(){
-              const response = await axios.post("https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o", jsonData);
-              return res.status(201).send({ message: "Email enviado com sucesso!", token: token })
+            async function enviarEmail() {
+              const response = await axios.post(
+                "https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o",
+                jsonData
+              );
+              return res
+                .status(201)
+                .send({ message: "Email enviado com sucesso!", token: token });
               console.log(response.status);
-
-            }enviarEmail()
+            }
+            enviarEmail();
           } catch (error) {
             console.log(error);
-            return res.status(401).send({ message: error })
+            return res.status(401).send({ message: error });
           }
         }
       } else {
-        return res.status(404).send({ message: error, })
+        return res.status(404).send({ message: error });
       }
-    })
-  })
+    });
+  });
 });
 
-module.exports = routes
+module.exports = routes;
