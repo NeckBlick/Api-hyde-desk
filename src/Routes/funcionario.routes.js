@@ -350,9 +350,9 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
  */
 // Login
 routes.post("/login", (req, res) => {
-  const { usuario,email, senha } = req.body;
+  const { usuario , senha } = req.body;
 
-  if (!usuario || !email) {
+  if (!usuario) {
     return res.status(422).send({ message: "O usuário ou email são obrigatórios!" });
   }
   if (!senha) {
@@ -365,7 +365,7 @@ routes.post("/login", (req, res) => {
       return res.status(500).send({ erro: err });
     }
     const query = "SELECT * FROM funcionarios WHERE usuario = ? OR email_funcionario = ?";
-    conn.query(query, [usuario,email], (erro, result, fields) => {
+    conn.query(query, [usuario,usuario], (erro, result, fields) => {
       conn.release();
       if (erro) {
         console.log(erro);
