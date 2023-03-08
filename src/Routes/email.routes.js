@@ -52,12 +52,12 @@ routes.post("/", async (req, res) => {
   let tipoEmail = "";
 
   if (tipoTabela === "empresas") {
-    tipoEmail = "empresa";
+    tipoEmail = "email_empresa";
   } else if (tipoTabela === "tecnicos") {
-    tipoEmail = "tecnico";
+    tipoEmail = "email_tecnico";
     console.log(tipoEmail);
   } else {
-    tipoEmail = "funcionario";
+    tipoEmail = "email_funcionario";
   }
 
   let token = "";
@@ -65,7 +65,8 @@ routes.post("/", async (req, res) => {
     let aleatorio = Math.floor(Math.random() * 9);
     token = token + String(aleatorio);
   }
-  let query = `SELECT * FROM ${tipoTabela} WHERE email_${tipoEmail} = '${toemail}'`;
+  console.log(tipoEmail)
+  let query = `SELECT * FROM ${tipoTabela} WHERE ${tipoEmail} = '${toemail}'`;
 
   var jsonData = {
     toemail: "",
@@ -74,20 +75,20 @@ routes.post("/", async (req, res) => {
   };
   db.getConnection((error, conn) => {
     if (error) {
-      return res.status(500).send({ message: error });
+      return res.status(500).send({ message: "Não foi possível enviar o email", error: error });
     }
 
     conn.query(query, (error, result) => {
       conn.release();
       if (error) {
         res.status(500).send({
-          error: error,
-          response: null,
+          message: "Não foi possível enviar o email", error: error
         });
       }
+      console.log(result)
       if (result.length > 0) {
         nome = result[0].nome;
-        jsonData.toemail = result[0].email;
+        jsonData.toemail = result[0][tipoEmail];
         if (jsonData.toemail.length > 0) {
           try {
             async function enviarEmail() {
@@ -98,16 +99,14 @@ routes.post("/", async (req, res) => {
               return res
                 .status(201)
                 .send({ message: "Email enviado com sucesso!", token: token });
-              console.log(response.status);
             }
             enviarEmail();
           } catch (error) {
-            console.log(error);
-            return res.status(401).send({ message: error });
+            return res.status(400).send({ message: "Não foi possível enviar o email", error: error });
           }
         }
       } else {
-        return res.status(404).send({ message: error });
+        return res.status(404).send({ message: "Não foi possivel encontrar o email nos nossos servidores" });
       }
     });
   });
