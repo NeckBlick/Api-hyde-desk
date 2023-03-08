@@ -7,8 +7,6 @@ const login = require("../../middlewares/login");
 const routes = express.Router();
 const upload = require("../../middlewares/uploadImagens");
 
-
-
 /**
  * @swagger
  * /empresas/{id}:
@@ -72,7 +70,6 @@ routes.get("/:id", login, (req, res, next) => {
   });
 });
 
-
 /**
  * @swagger
  * /empresas/cadastro:
@@ -123,7 +120,7 @@ routes.get("/:id", login, (req, res, next) => {
  *         type: String
  *         required: true
  *       - name: confirmarsenha
- *         description: Confirmar a senha 
+ *         description: Confirmar a senha
  *         in: formData
  *         type: String
  *         required: true
@@ -173,7 +170,7 @@ routes.get("/:id", login, (req, res, next) => {
  *        confirmsenha:
  *         type: string
  *         example: senha123
- */   
+ */
 // Cadastro das empresas
 routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
   const {
@@ -260,7 +257,6 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
               ],
 
               async (error, result, field) => {
-                //conn.release() serve para liberar a conexão com o banco de dados para que as conexões abertas não travem as apis
                 conn.release();
                 if (error) {
                   res.status(500).send({
@@ -268,25 +264,11 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
                     response: null,
                   });
                 }
-                try {
-                  var jsonData = {
-                    toemail: email,
-                    nome: nome,
-                    tipo: "cadastro",
-                  };
-                  const response = await axios.post(
-                    "https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o",
-                    jsonData
-                  );
-                  if (response.status == 200) {
-                    return res.status(201).send({
-                      message: "Empresa cadastrada com sucesso!",
-                      id_empresa: result.insertId,
-                    });
-                  }
-                } catch (error) {
-                  return res.status(401).send({ menssage: error });
-                }
+
+                return res.status(201).send({
+                  message: "Empresa cadastrada com sucesso!",
+                  id_empresa: result.insertId,
+                });
               }
             );
           });
@@ -295,7 +277,6 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
     });
   });
 });
-
 
 /**
  * @swagger
@@ -341,7 +322,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
  *        senha:
  *         type: string
  *         example: senha123
- */   
+ */
 // Login
 routes.post("/login", (req, res) => {
   const { cnpj, senha } = req.body;
@@ -402,7 +383,6 @@ routes.post("/login", (req, res) => {
     });
   });
 });
-
 
 /**
  * @swagger
@@ -590,7 +570,7 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
   const { senha } = req.body;
   const { email } = req.params;
 
-  console.log(senha)
+  console.log(senha);
   if (!senha) {
     return res.status(422).send({ message: "A senha é obrigatória!" });
   }
@@ -616,29 +596,30 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
             if (err) {
               return next(err);
             }
-            
+
             bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
               const query = `UPDATE empresas SET senha = '${hashSenha}' WHERE email_empresa = '${email}'`;
-  
+
               conn.query(query, (error, result) => {
                 conn.release();
                 if (error) {
                   return res.status(500).send({ error: error });
                 }
                 return res
-                .status(200)
-                .send({ mensagem: "Senha alterada com sucesso." });
+                  .status(200)
+                  .send({ mensagem: "Senha alterada com sucesso." });
               });
             });
           });
-        }else{
-          return res.status(401).send({ message: "A nova senha não pode ser igual a anterior !" });
+        } else {
+          return res
+            .status(401)
+            .send({ message: "A nova senha não pode ser igual a anterior !" });
         }
       });
     });
   });
 });
-
 
 /**
  * @swagger
@@ -703,7 +684,6 @@ routes.put("/desativar/:id_empresa", login, (req, res, next) => {
     });
   });
 });
-
 
 /**
  * @swagger
