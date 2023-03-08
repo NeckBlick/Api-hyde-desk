@@ -49,11 +49,11 @@ routes.get("/", login, (req, res, next) => {
       });
     }
     let query =
-      "SELECT f.id_funcionario,f.nome,f.matricula,f.usuario,f.status_funcionario,f.senha,f.foto FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
+      "SELECT f.id_funcionario,f.nome_funcionario,f.email_funcionario,f.matricula,f.usuario,f.status_funcionario,f.senha,f.foto FROM funcionarios AS f INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
     let keysFilters = Object.keys(filters);
-    if (keysFilters.includes("nome")) {
-      query += ` AND f.nome LIKE '${filters["nome"]}'`;
-      keysFilters = keysFilters.filter((item) => item !== "nome");
+    if (keysFilters.includes("nome_funcionario")) {
+      query += ` AND f.nome LIKE '${filters["nome_funcionario"]}'`;
+      keysFilters = keysFilters.filter((item) => item !== "nome_funcionario");
     }
     if (keysFilters.length !== 0) {
       query += " WHERE";
@@ -227,7 +227,7 @@ routes.get("/:id", login, (req, res, next) => {
  */
 // Cadastro
 routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
-  const { nome, id_empresa, matricula, usuario, senha, confirmsenha } =
+  const { nome, id_empresa, matricula, email, usuario, senha, confirmsenha } =
     req.body;
   const foto = req.file;
 
@@ -278,7 +278,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
               return console.log(errorCrypt);
             }
 
-            let query = `INSERT INTO funcionarios (nome, usuario, matricula, foto, senha, status_funcionario, empresa_id) SELECT '${nome}','${usuario}','${matricula}','${foto.path}','${hashSenha}', 'Ativo', '${id_empresa}'`;
+            let query = `INSERT INTO funcionarios (nome_funcionario, usuario, email_funcionario ,matricula, foto, senha, status_funcionario, empresa_id) SELECT '${nome}','${usuario}','${email}','${matricula}','${foto.path}','${hashSenha}', 'Ativo', '${id_empresa}'`;
 
             conn.query(query, (error, result, fields) => {
               conn.release();
@@ -350,10 +350,10 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
  */
 // Login
 routes.post("/login", (req, res) => {
-  const { matricula, senha } = req.body;
+  const { usuario,email, senha } = req.body;
 
-  if (!matricula) {
-    return res.status(422).send({ message: "A matricula é obrigatória!" });
+  if (!usuario || !email) {
+    return res.status(422).send({ message: "O usuário ou email são obrigatórios!" });
   }
   if (!senha) {
     return res.status(422).send({ message: "A senha é obrigatória!" });
@@ -364,8 +364,8 @@ routes.post("/login", (req, res) => {
       console.log(err);
       return res.status(500).send({ erro: err });
     }
-    const query = "SELECT * FROM funcionarios WHERE matricula = ?";
-    conn.query(query, [matricula], (erro, result, fields) => {
+    const query = "SELECT * FROM funcionarios WHERE usuario = ? OR email_funcionario = ?";
+    conn.query(query, [usuario,email], (erro, result, fields) => {
       conn.release();
       if (erro) {
         console.log(erro);
@@ -483,7 +483,7 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
       }
       const foto_antiga = result[0].foto;
       if (foto) {
-        const query = `UPDATE funcionarios SET nome = '${nome}', usuario = '${usuario}', foto = ? WHERE id_funcionario = ${id_funcionario}`;
+        const query = `UPDATE funcionarios SET nome_funcionario = '${nome}', usuario = '${usuario}', foto = ? WHERE id_funcionario = ${id_funcionario}`;
 
         conn.query(query, [foto.path], (error, result) => {
           conn.release();
@@ -496,7 +496,7 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
             .send({ mensagem: "Dados alterados com sucesso." });
         });
       } else {
-        const query = `UPDATE funcionarios SET nome = '${nome}', usuario = '${usuario}', foto = ? WHERE id_funcionario = ${id_funcionario}`;
+        const query = `UPDATE funcionarios SET nome_funcionario = '${nome}', usuario = '${usuario}', foto = ? WHERE id_funcionario = ${id_funcionario}`;
         conn.query(query, [result[0].foto], (error, result) => {
           conn.release();
           if (error) {
@@ -570,7 +570,7 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
     if (error) {
       return res.status(500).send({ error: error });
     }
-    const query_get = `SELECT senha FROM funcionarios WHERE email = '${email}'`;
+    const query_get = `SELECT senha FROM funcionarios WHERE email_funcionario = '${email}'`;
 
     conn.query(query_get, (error, result) => {
       // conn.release();
@@ -589,7 +589,7 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
             }
             
             bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
-              const query = `UPDATE funcionarios SET senha = '${hashSenha}' WHERE email = '${email}'`;
+              const query = `UPDATE funcionarios SET senha = '${hashSenha}' WHERE email_funcionario = '${email}'`;
   
               conn.query(query, (error, result) => {
                 conn.release();

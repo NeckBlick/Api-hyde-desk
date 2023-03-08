@@ -175,7 +175,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
             }
 
             let query =
-              "INSERT INTO tecnicos (nome, cpf, email, telefone, especialidade, matricula, senha, foto, status_tecnico) VALUES (?,?,?,?,?,?,?,?, 'Ativo')";
+              "INSERT INTO tecnicos (nome_tecnico, cpf, email_tecnico, telefone, especialidade, matricula, senha, foto, status_tecnico) VALUES (?,?,?,?,?,?,?,?, 'Ativo')";
 
             conn.query(
               query,
@@ -468,7 +468,7 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
     if (error) {
       return res.status(500).send({ error: error });
     }
-    const query_get = `SELECT nome, email, foto, especialidade, telefone FROM tecnicos WHERE id_tecnico = ${id_tecnico}`;
+    const query_get = `SELECT nome_tecnico, email_tecnico, foto, especialidade, telefone FROM tecnicos WHERE id_tecnico = ${id_tecnico}`;
 
     conn.query(query_get, (error, result) => {
       // conn.release();
@@ -478,7 +478,7 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
 
       const foto_antiga = result[0].foto;
       if (foto) {
-        const query = `UPDATE tecnicos SET nome = '${nome}', foto = ?, especialidade = '${especialidade}', telefone = '${telefone}', email = '${email}' WHERE id_tecnico = ${id_tecnico}`;
+        const query = `UPDATE tecnicos SET nome_tecnico = '${nome}', foto = ?, especialidade = '${especialidade}', telefone = '${telefone}', email_tecnico = '${email}' WHERE id_tecnico = ${id_tecnico}`;
 
         conn.query(query, [foto.path], (error, result) => {
           conn.release();
@@ -489,7 +489,7 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
           fs.unlinkSync(foto_antiga);
         });
       } else {
-        const query = `UPDATE tecnicos SET nome = '${nome}', foto = ?, especialidade = '${especialidade}', telefone = '${telefone}', email = '${email}' WHERE id_tecnico = ${id_tecnico}`;
+        const query = `UPDATE tecnicos SET nome_tecnico = '${nome}', foto = ?, especialidade = '${especialidade}', telefone = '${telefone}', email_tecnico = '${email}' WHERE id_tecnico = ${id_tecnico}`;
         conn.query(query, [result[0].foto], (error, result) => {
           conn.release();
           if (error) {
@@ -562,7 +562,7 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
     if (error) {
       return res.status(500).send({ error: error });
     }
-    const query_get = `SELECT senha FROM tecnicos WHERE email = '${email}'`;
+    const query_get = `SELECT senha FROM tecnicos WHERE email_tecnico = '${email}'`;
 
     conn.query(query_get, (error, result) => {
       // conn.release();
@@ -581,7 +581,7 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
             }
             
             bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
-              const query = `UPDATE tecnicos SET senha = '${hashSenha}' WHERE email = '${email}'`;
+              const query = `UPDATE tecnicos SET senha = '${hashSenha}' WHERE email_tecnico = '${email}'`;
   
               conn.query(query, (error, result) => {
                 conn.release();

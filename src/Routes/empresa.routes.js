@@ -244,7 +244,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
             }
 
             let query =
-              "INSERT INTO empresas (nome, cnpj, cep, numero_endereco, telefone, email,foto, senha, status_empresa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Ativo')";
+              "INSERT INTO empresas (nome_empresa, cnpj, cep, numero_endereco, telefone, email_empresa,foto, senha, status_empresa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Ativo')";
 
             conn.query(
               query,
@@ -498,7 +498,7 @@ routes.put("/editar/:id", login, (req, res, next) => {
     if (error) {
       return res.status(500).send({ error: error });
     }
-    const query_get = `SELECT nome, senha, cep, numero_endereco, telefone, email FROM empresas WHERE id_empresa = ${id_empresa}`;
+    const query_get = `SELECT nome_empresa, senha, cep, numero_endereco, telefone, email_empresa FROM empresas WHERE id_empresa = ${id_empresa}`;
 
     conn.query(query_get, (error, result) => {
       // conn.release();
@@ -522,7 +522,7 @@ routes.put("/editar/:id", login, (req, res, next) => {
           }
 
           bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
-            const query = `UPDATE empresas SET nome = '${nome}', senha = '${hashSenha}', cep = '${cep}', numero_endereco = '${numero_endereco}', telefone = '${telefone}', email = '${email}' WHERE id_empresa = ${id_empresa}`;
+            const query = `UPDATE empresas SET nome_empresa = '${nome}', senha = '${hashSenha}', cep = '${cep}', numero_endereco = '${numero_endereco}', telefone = '${telefone}', email_empresa = '${email}' WHERE id_empresa = ${id_empresa}`;
 
             conn.query(query, (error, result) => {
               conn.release();
@@ -650,7 +650,7 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
             }
             
             bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
-              const query = `UPDATE empresas SET senha = '${hashSenha}' WHERE email = '${email}'`;
+              const query = `UPDATE empresas SET senha = '${hashSenha}' WHERE email_empresa = '${email}'`;
   
               conn.query(query, (error, result) => {
                 conn.release();
