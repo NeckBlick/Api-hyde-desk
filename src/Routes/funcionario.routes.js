@@ -241,6 +241,9 @@ routes.post("/cadastro", upload.single("foto"), async (req, res, next) => {
   if (!usuario) {
     return res.status(422).send({ message: "O usuario é obrigatório!" });
   }
+  if (!email) {
+    return res.status(422).send({ message: "O email é obrigatório!" });
+  }
   if (!foto) {
     return res.status(422).send({ message: "A foto é obrigatório!" });
   }
