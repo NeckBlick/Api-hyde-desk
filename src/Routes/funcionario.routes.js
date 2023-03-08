@@ -414,24 +414,29 @@ routes.post("/login", (req, res) => {
 /**
  * @swagger
  * /funcionarios/editar/{id}:
- *   post:
+ *   put:
  *     tags: [Funcionarios]
- *     summary: Login do funcionário
- *     description: Essa rota serve para o funcionário fazer login
+ *     summary: Editar o funcionario pelo id
+ *     description: Essa rota serve para editar o funcionario pelo id
  *     produces: application/json
  *     parameters:
- *       - name: id_funcionario
- *         description: Id do funcionário
- *         in: formData
- *         type: String
- *         required: true
  *       - name: nome
- *         description: Nome do funcionário
+ *         description: Nome do funcionario
  *         in: formData
  *         type: String
  *         required: true
+ *       - name: email
+ *         description: Email do funcionario
+ *         in: formData
+ *         type: String
+ *         required: true
+ *       - name: foto
+ *         description: Foto do funcionario
+ *         in: formData
+ *         type: String
+ *         required: false
  *       - name: usuario
- *         description: Usuario do funcionário
+ *         description: Usuario do funcionario
  *         in: formData
  *         type: String
  *         required: true
@@ -441,28 +446,26 @@ routes.post("/login", (req, res) => {
  *       content:
  *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/FuncionarioEditar'
+ *             $ref: '#/components/schemas/EmpresaId'
  *     responses:
  *       '200':
- *         description: Resultado do banco.
- *       '422':
- *         description: Alguma informção faltando.
+ *         description: Dados alterados com sucesso..
  *       '500':
  *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
  * components:
  *  schemas:
- *    FuncionarioEditar:
+ *    EmpresaId:
  *      type: object
  *      properties:
- *        id:
- *         type: integer
- *         example: joao
  *        nome:
  *         type: string
- *         example: joao
- *        usuario:
+ *         example: Nome do joão
+ *        email:
  *         type: string
- *         example: joão
+ *         example: example@example.com
+ *        foto:
+ *         type: string
+ *         example: Minha foto
  */
 // Editar um funcionário
 routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
@@ -515,19 +518,19 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
 /**
  * @swagger
  * /funcionarios/redefinir-senha/{email}:
- *   post:
+ *   put:
  *     tags: [Funcionarios]
- *     summary: Login do funcionário
- *     description: Essa rota serve para o funcionário fazer login
+ *     summary: Editar o funcionário pelo email
+ *     description: Essa rota serve para editar o funcionario pelo email
  *     produces: application/json
  *     parameters:
  *       - name: email
- *         description: Email do funcionário
+ *         description: Email do funcionario
  *         in: formData
  *         type: String
  *         required: true
  *       - name: senha
- *         description: Senha do funcionário
+ *         description: Nova senha do funcionario
  *         in: formData
  *         type: String
  *         required: true
@@ -535,27 +538,27 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
  *       description: Precisará passar os seguintes dados no corpo da requisição
  *       required: true
  *       content:
- *         multipart/form-data:
+ *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/FuncionarioEditar'
+ *             $ref: '#/components/schemas/EmailEmpresa'
  *     responses:
- *       '200':
- *         description: Resultado do banco.
+ *       '201':
+ *         description: Editado com sucesso.
  *       '422':
  *         description: Alguma informção faltando.
  *       '500':
  *         description: Houve um erro ao conectar ao servidor, tente novamente mais tarde...
  * components:
  *  schemas:
- *    FuncionarioEditar:
+ *    EmailEmpresa:
  *      type: object
  *      properties:
  *        email:
- *         type: String
+ *         type: string
  *         example: example@example.com
  *        senha:
  *         type: string
- *         example: joao123
+ *         example: senha123
  */
 routes.put("/redefinir-senha/:email", (req, res, next) => {
   const { senha } = req.body;
