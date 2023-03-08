@@ -77,7 +77,7 @@ routes.get("/", login, (req, res, next) => {
     }
 
     let query =
-      "SELECT *, e.nome AS nome_empresa, f.nome AS nome_funcionario FROM chamados AS c INNER JOIN funcionarios AS f ON f.id_funcionario = c.funcionario_id INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
+      "SELECT * FROM chamados AS c INNER JOIN funcionarios AS f ON f.id_funcionario = c.funcionario_id INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id";
 
     let keysFilters = Object.keys(filters);
 
@@ -178,7 +178,7 @@ routes.get("/:id", login, (req, res, next) => {
       });
     }
 
-    const query = `SELECT *, e.nome AS nome_empresa FROM chamados AS c INNER JOIN funcionarios AS f ON f.id_funcionario = c.funcionario_id INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id WHERE id_chamado = ${id_chamado}`;
+    const query = `SELECT * FROM chamados AS c INNER JOIN funcionarios AS f ON f.id_funcionario = c.funcionario_id INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id WHERE id_chamado = ${id_chamado}`;
 
     conn.query(query, (error, result) => {
       conn.release();
@@ -724,7 +724,7 @@ routes.put(
     db.getConnection((error, conn) => {
       if (error) {
         return res.status(500).send({
-          message: "Não foi possível atualizar o status do chamado.",
+          message: "Não foi possível concluir chamado.",
           error: error,
         });
       }
