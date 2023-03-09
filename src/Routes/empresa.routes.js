@@ -513,7 +513,7 @@ routes.put("/editar/:id", login, (req, res, next) => {
 
             return res
               .status(200)
-              .send({ mensagem: "Dados alterados com sucesso." });
+              .send({ message: "Dados alterados com sucesso." });
           });
         });
       });
@@ -607,7 +607,7 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
                 }
                 return res
                   .status(200)
-                  .send({ mensagem: "Senha alterada com sucesso." });
+                  .send({ message: "Senha alterada com sucesso." });
               });
             });
           });

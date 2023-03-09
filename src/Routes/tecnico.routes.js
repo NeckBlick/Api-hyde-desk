@@ -215,7 +215,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
                     });
                   }
                 } catch (error) {
-                  return res.status(401).send({ menssage: error });
+                  return res.status(401).send({ message: error });
                 }
               }
             );
@@ -498,7 +498,7 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
         });
       }
 
-      return res.status(200).send({ mensagem: "Dados alterados com sucesso." });
+      return res.status(200).send({ message: "Dados alterados com sucesso." });
     });
   });
 });
@@ -590,7 +590,7 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
                 }
                 return res
                 .status(200)
-                .send({ mensagem: "Senha alterada com sucesso." });
+                .send({ message: "Senha alterada com sucesso." });
               });
             });
           });
@@ -729,7 +729,6 @@ routes.put("/ativar/:id_tecnico", login, (req, res, next) => {
           error: error,
         });
       }
-
       return res.status(200).send({
         message: "Técnico ativado com sucesso.",
       });
