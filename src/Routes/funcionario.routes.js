@@ -499,7 +499,7 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
           fs.unlinkSync(foto_antiga);
           return res
             .status(200)
-            .send({ mensagem: "Dados alterados com sucesso." });
+            .send({ message: "Dados alterados com sucesso." });
         });
       } else {
         const query = `UPDATE funcionarios SET nome_funcionario = '${nome}', usuario = '${usuario}', foto = ? WHERE id_funcionario = ${id_funcionario}`;
@@ -510,7 +510,7 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
           }
           return res
             .status(200)
-            .send({ mensagem: "Dados alterados com sucesso." });
+            .send({ message: "Dados alterados com sucesso." });
         });
       }
     });
@@ -604,7 +604,7 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
                 }
                 return res
                 .status(200)
-                .send({ mensagem: "Senha alterada com sucesso." });
+                .send({ message: "Senha alterada com sucesso." });
               });
             });
           });
