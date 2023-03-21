@@ -480,7 +480,7 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
     if (error) {
       return res.status(500).send({ error: error });
     }
-    const query_get = `SELECT nome, usuario, foto FROM funcionarios WHERE id_funcionario = ${id_funcionario}`;
+    const query_get = `SELECT nome_funcionario, usuario, foto FROM funcionarios WHERE id_funcionario = ${id_funcionario}`;
 
     conn.query(query_get, (error, result) => {
       // conn.release();
