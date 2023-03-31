@@ -836,7 +836,7 @@ routes.put(
  */
 
 // Avaliar chamado
-routes.put("/avaliar/:id_chamado", login, (req, res, next) => {
+routes.post("/avaliar/:id_chamado", login, (req, res, next) => {
   const { id_chamado } = req.params;
   const { num_avaliacao, desc_avaliacao } = req.body;
 
