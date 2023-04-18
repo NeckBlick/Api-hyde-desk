@@ -205,7 +205,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
                     tipo: "cadastro",
                   };
                   const response = await axios.post(
-                    "https://prod2-16.eastus.logic.azure.com:443/workflows/84d96003bf1947d3a28036ee78348d4b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5BhPfg9NSmVU4gYJeUVD9yqkJPZACBFFxj0m1-KIY0o",
+                    "https://prod2-72.eastus.logic.azure.com:443/workflows/79d29e02aecc45ea8cee38e14e09b685/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xXftySWT-ufVe0R5b4SiaKOo60Qgw67CCptwGUjh1Dc",
                     jsonData
                   );
                   if (response.status == 200) {
