@@ -81,7 +81,7 @@ routes.post("/", async (req, res) => {
     conn.query(query, (error, result) => {
       conn.release();
       if (error) {
-        res.status(500).send({
+        return res.status(500).send({
           message: "Não foi possível enviar o email", error: error
         });
       }
