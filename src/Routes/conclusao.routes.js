@@ -48,12 +48,19 @@ routes.get("/", login, (req, res, next) => {
 
     let keysFilters = Object.keys(filters);
 
+    keysFilters.forEach((key) => {
+      if (key === "id_empresa") {
+        query = `SELECT * FROM conclusoes AS con INNER JOIN chamados AS c ON con.chamado_id = c.id_chamado INNER JOIN funcionarios AS f ON c.funcionario_id = f.id_funcionario INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id`;
+      }
+    });
+
     if (keysFilters.length !== 0) {
       query += " WHERE";
 
       try {
         keysFilters.forEach((key, index) => {
           if (index !== keysFilters.length - 1) {
+            console.log(filters)
             query += ` ${key} LIKE '${filters[key]}' AND`;
           } else {
             query += ` ${key} LIKE '${filters[key]}'`;
