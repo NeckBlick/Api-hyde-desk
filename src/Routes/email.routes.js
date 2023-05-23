@@ -65,7 +65,7 @@ routes.post("/", async (req, res) => {
     let aleatorio = Math.floor(Math.random() * 9);
     token = token + String(aleatorio);
   }
-  console.log(tipoEmail)
+  console.log(tipoEmail);
   let query = `SELECT * FROM ${tipoTabela} WHERE ${tipoEmail} = '${toemail}'`;
 
   var jsonData = {
@@ -75,17 +75,20 @@ routes.post("/", async (req, res) => {
   };
   db.getConnection((error, conn) => {
     if (error) {
-      return res.status(500).send({ message: "Não foi possível enviar o email", error: error });
+      return res
+        .status(500)
+        .send({ message: "Não foi possível enviar o email", error: error });
     }
 
     conn.query(query, (error, result) => {
       conn.release();
       if (error) {
         return res.status(500).send({
-          message: "Não foi possível enviar o email", error: error
+          message: "Não foi possível enviar o email",
+          error: error,
         });
       }
-      console.log(result)
+      console.log(result);
       if (result.length > 0) {
         nome = result[0].nome;
         jsonData.toemail = result[0][tipoEmail];
@@ -93,7 +96,7 @@ routes.post("/", async (req, res) => {
           try {
             async function enviarEmail() {
               const response = await axios.post(
-                "https://prod2-72.eastus.logic.azure.com:443/workflows/79d29e02aecc45ea8cee38e14e09b685/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xXftySWT-ufVe0R5b4SiaKOo60Qgw67CCptwGUjh1Dc",
+                "https://prod-13.eastus.logic.azure.com:443/workflows/fee1142331314a4a9bb6a563d49a7129/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=aNldPawtiGMsBFfCrC1gKC0gwoUGchCaOjjLltr2pMg",
                 jsonData
               );
               return res
@@ -102,11 +105,16 @@ routes.post("/", async (req, res) => {
             }
             enviarEmail();
           } catch (error) {
-            return res.status(400).send({ message: "Não foi possível enviar o email", error: error });
+            return res.status(400).send({
+              message: "Não foi possível enviar o email",
+              error: error,
+            });
           }
         }
       } else {
-        return res.status(404).send({ message: "Não foi possivel encontrar o email nos nossos servidores" });
+        return res.status(404).send({
+          message: "Não foi possivel encontrar o email nos nossos servidores",
+        });
       }
     });
   });

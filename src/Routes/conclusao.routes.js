@@ -44,15 +44,10 @@ routes.get("/", login, (req, res, next) => {
       });
     }
 
-    let query = "SELECT * FROM conclusoes";
+    let query =
+      "SELECT *, c.anexo AS anexo_conclusao, c.descricao AS desc_conclusao FROM conclusoes AS con INNER JOIN chamados AS c ON con.chamado_id = c.id_chamado INNER JOIN funcionarios AS f ON c.funcionario_id = f.id_funcionario INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id INNER JOIN tecnicos AS t ON c.tecnico_id = t.id_tecnico";
 
     let keysFilters = Object.keys(filters);
-
-    keysFilters.forEach((key) => {
-      if (key === "id_empresa") {
-        query = `SELECT * FROM conclusoes AS con INNER JOIN chamados AS c ON con.chamado_id = c.id_chamado INNER JOIN funcionarios AS f ON c.funcionario_id = f.id_funcionario INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id`;
-      }
-    });
 
     if (keysFilters.length !== 0) {
       query += " WHERE";
@@ -60,7 +55,7 @@ routes.get("/", login, (req, res, next) => {
       try {
         keysFilters.forEach((key, index) => {
           if (index !== keysFilters.length - 1) {
-            console.log(filters)
+            console.log(filters);
             query += ` ${key} LIKE '${filters[key]}' AND`;
           } else {
             query += ` ${key} LIKE '${filters[key]}'`;
@@ -74,9 +69,8 @@ routes.get("/", login, (req, res, next) => {
       }
     }
 
-    console.log(query);
-
     conn.query(query, (error, results, fields) => {
+      conn.release();
       if (error) {
         return res.status(500).send({
           message: "Não foi possível consultar conclusões.",
@@ -84,7 +78,21 @@ routes.get("/", login, (req, res, next) => {
         });
       }
 
-      return res.status(200).send(results);
+      return res.status(200).send(
+        results.map((result) => {
+          return {
+            id_conclusao: result.id_conclusao,
+            descricao: result.desc_conclusao,
+            anexo: result.anexo_conclusao,
+            data_termino: result.data_termino,
+            num_avaliacao: result.num_avaliacao,
+            desc_avaliacao: result.desc_avaliacao,
+            chamado_id: result.chamado_id,
+            nome_tecnico: result.nome_tecnico,
+            nome_empresa: result.nome_empresa,
+          };
+        })
+      );
     });
   });
 });
@@ -124,9 +132,11 @@ routes.get("/:id_conclusao", login, (req, res, next) => {
       });
     }
 
-    const query = "SELECT * FROM conclusoes WHERE id_conclusao = ?";
+    const query =
+      "SELECT *, c.anexo AS anexo_conclusao, c.descricao AS desc_conclusao FROM conclusoes AS con INNER JOIN chamados AS c ON con.chamado_id = c.id_chamado INNER JOIN funcionarios AS f ON c.funcionario_id = f.id_funcionario INNER JOIN empresas AS e ON e.id_empresa = f.empresa_id INNER JOIN tecnicos AS t ON c.tecnico_id = t.id_tecnico WHERE id_conclusao = ?";
 
     conn.query(query, [id_conclusao], (error, result, fields) => {
+      conn.release();
       if (error) {
         return res.status(500).send({
           message: "Não foi possível consultar conclusão.",
@@ -135,7 +145,19 @@ routes.get("/:id_conclusao", login, (req, res, next) => {
       }
 
       if (result.length !== 0) {
-        return res.status(200).send(result[0]);
+        return res.status(200).send([
+          {
+            id_conclusao: result[0].id_conclusao,
+            descricao: result[0].desc_conclusao,
+            anexo: result[0].anexo_conclusao,
+            data_termino: result[0].data_termino,
+            num_avaliacao: result[0].num_avaliacao,
+            desc_avaliacao: result[0].desc_avaliacao,
+            chamado_id: result[0].chamado_id,
+            nome_tecnico: result[0].nome_tecnico,
+            nome_empresa: result[0].nome_empresa,
+          },
+        ]);
       } else {
         return res.status(404).send({
           message: "Esse chamado não está concluído ou não foi encontrado.",

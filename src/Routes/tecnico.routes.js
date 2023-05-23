@@ -9,7 +9,6 @@ const db = require("../../conexao");
 const upload = require("../../middlewares/uploadImagens");
 const login = require("../../middlewares/login");
 
-
 /**
  * @swagger
  * /tecnicos/cadastro:
@@ -55,7 +54,7 @@ const login = require("../../middlewares/login");
  *         type: String
  *         required: true
  *       - name: confirmsenha
- *         description: Confirmar a senha 
+ *         description: Confirmar a senha
  *         in: formData
  *         type: String
  *         required: true
@@ -205,7 +204,7 @@ routes.post("/cadastro", upload.single("foto"), async (req, res) => {
                     tipo: "cadastro",
                   };
                   const response = await axios.post(
-                    "https://prod2-72.eastus.logic.azure.com:443/workflows/79d29e02aecc45ea8cee38e14e09b685/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xXftySWT-ufVe0R5b4SiaKOo60Qgw67CCptwGUjh1Dc",
+                    "https://prod-13.eastus.logic.azure.com:443/workflows/fee1142331314a4a9bb6a563d49a7129/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=aNldPawtiGMsBFfCrC1gKC0gwoUGchCaOjjLltr2pMg",
                     jsonData
                   );
                   if (response.status == 200) {
@@ -503,7 +502,6 @@ routes.put("/editar/:id", login, upload.single("foto"), (req, res, next) => {
   });
 });
 
-
 /**
  * @swagger
  * /tecnicos/redefinir-senha/{email}:
@@ -553,7 +551,7 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
   const { senha } = req.body;
   const { email } = req.params;
 
-  console.log(senha)
+  console.log(senha);
   if (!senha) {
     return res.status(422).send({ message: "A senha é obrigatória!" });
   }
@@ -579,29 +577,30 @@ routes.put("/redefinir-senha/:email", (req, res, next) => {
             if (err) {
               return next(err);
             }
-            
+
             bcrypt.hash(senha, salt, (errorCrypt, hashSenha) => {
               const query = `UPDATE tecnicos SET senha = '${hashSenha}' WHERE email_tecnico = '${email}'`;
-  
+
               conn.query(query, (error, result) => {
                 conn.release();
                 if (error) {
                   return res.status(500).send({ error: error });
                 }
                 return res
-                .status(200)
-                .send({ message: "Senha alterada com sucesso." });
+                  .status(200)
+                  .send({ message: "Senha alterada com sucesso." });
               });
             });
           });
-        }else{
-          return res.status(401).send({ message: "A nova senha não pode ser igual a anterior !" });
+        } else {
+          return res
+            .status(401)
+            .send({ message: "A nova senha não pode ser igual a anterior !" });
         }
       });
     });
   });
 });
-
 
 /**
  * @swagger
@@ -668,7 +667,6 @@ routes.put("/desativar/:id_tecnico", login, (req, res, next) => {
     });
   });
 });
-
 
 /**
  * @swagger
