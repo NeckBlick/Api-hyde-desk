@@ -9,13 +9,13 @@ const options = {
             termsOfService: "http://swagger.io/terms/",
             contact: {
             name: "Equipe HydeDesk",
-            url: "https://localhost:3001",
+            url: "https://rei0mqdqxi.execute-api.us-east-1.amazonaws.com",
             email: "hydedesk@gmail.com",
           },
         },
         servers: [
           {
-            url: "https://hdteste.azurewebsites.net",
+            url: "https://rei0mqdqxi.execute-api.us-east-1.amazonaws.com",
             description: "Base URL"
           },
         ],
