@@ -64,7 +64,7 @@ routes.post("/", async (req, res) => {
   let token = "";
   for (let index = 0; index < 6; index++) {
     let aleatorio = Math.floor(Math.random() * 9);
-    token = token + String(aleatorio);
+    token +=  String(aleatorio);
   }
   let query = `SELECT * FROM ${tipoTabela} WHERE ${tipoEmail} = '${toemail}'`;
 
@@ -91,7 +91,7 @@ routes.post("/", async (req, res) => {
       }
       if (result.length > 0) {
         // Criptografar o token
-        bcrypt.genSalt(10, (err, salt) => {
+        bcrypt.genSalt(15, (err, salt) => {
           if(err){
             return res.status(500).send({message: "Erro ao criar a hash!"})
           }
