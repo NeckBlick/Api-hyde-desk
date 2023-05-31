@@ -407,7 +407,7 @@ routes.post("/login", (req, res) => {
         }
         return res
           .status(401)
-          .send({ message: "Matricula ou senha inválida!" });
+          .send({ message: "Usuário ou senha inválida!" });
       });
     });
   });
